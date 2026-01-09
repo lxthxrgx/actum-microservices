@@ -1,0 +1,6 @@
+@Sublease_HostAddress = http://localhost:5274
+
+GET {{Sublease_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
