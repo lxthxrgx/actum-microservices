@@ -6,13 +6,15 @@ namespace SharedLibraries.model
 {
     public class Company
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; }
         public DateTime CreatedDate { get; set; }
-
-        public int UserOwnerId { get; set; }
-        public User UserOwner { get; set; } = new User();
+        public DateTime DeleteDate { get; set; }
 
         public bool isActive { get; set; } = true;
+
+        public List<CounterpartyModel> Counterparties = new List<CounterpartyModel>();
+        public List<GroupModel> Groups { get; set; } = new List<GroupModel>();
+        public List<CompanyUser> CompanyUsers { get; set; } = new List<CompanyUser>();
     }
 }

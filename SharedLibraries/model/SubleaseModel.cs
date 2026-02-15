@@ -7,28 +7,42 @@ namespace SharedLibraries.model
 {
     public class SubleaseModel
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
-        public int GroupId { get; private set; }
-        public GroupModel GroupTable { get; private set; } = new GroupModel();
+        public Guid GroupId { get; set; }
+        public GroupModel Group { get; set; } = new GroupModel();
 
-        public string Address { get; private set; } = "Address";
-        public string ContractNumber { get; private set; } = "ContractNumber";
-        public DateTime ContractSigningDate { get; private set; }
-        public DateTime AktDate { get; private set; }
-        public DateTime ContractEndDate { get; private set; }
-        public DateTime ContractEndDate2 { get; private set; }
-        public double RentalFee { get; private set; }
-        public double RentalFee2 { get; private set; }
+        public string Address { get; set; }
+        public string ContractNumber { get; set; }
+        public DateTime ContractSigningDate { get; set; }
+        public DateTime AktDate { get; set; }
+        public DateTime ContractEndDate { get; set; }
+        public DateTime ContractEndDate2 { get; set; }
+        public double RentalFee { get; set; }
+        public double RentalFee2 { get; set; }
         public bool? Done { get; set; } = false;
-        public ICollection<GroupModel> Group { get; } = new List<GroupModel>();
+
+        public List<SubleaseNotes> SubleaseNotes { get; set; } = new List<SubleaseNotes>();
+        public List<SubleaseFiles> SubleaseFiles { get; set; } = new List<SubleaseFiles>();
     }
 
     public class SubleaseNotes
     {
-        public int Id { get; private set; }
-        public int SubleaseId { get; private set; }
-        public SubleaseModel Sublease { get; private set; } = new SubleaseModel();
-        public string? PathToPdfFile_Sublease { get; private set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
+
+        public Guid SubleaseId { get;  set; }
+        public SubleaseModel Sublease { get; set; } = new SubleaseModel();
+
+        public string? Note { get; set; }
+    }
+
+    public class SubleaseFiles
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+
+        public Guid SubleaseId { get; set; }
+        public SubleaseModel Sublease { get; set; } = new SubleaseModel();
+
+        public string? FilePath { get; set; }
     }
 }
