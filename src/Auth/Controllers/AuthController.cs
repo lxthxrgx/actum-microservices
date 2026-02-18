@@ -1,6 +1,9 @@
 ﻿using Auth.service;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibraries.Factory;
+using SharedLibraries.model;
 
 namespace Auth.Controllers
 {
@@ -10,9 +13,16 @@ namespace Auth.Controllers
     {
         private readonly SignIn _signInService;
         private readonly SignUp _signUpService;
-        public authController(SignIn signInService, SignUp signUpService)
+        private readonly jwtService _jwtService;
+        private readonly httpOnly _httpOnly;
+
+        public authController(SignIn signInService, SignUp signUpService,
+            jwtService jwtService, httpOnly httpOnly)
         {
             _signInService = signInService;
+            _signUpService = signUpService;
+            _httpOnly = httpOnly;
+            _jwtService = jwtService;
         }
 
         public class SignInDto
@@ -36,7 +46,47 @@ namespace Auth.Controllers
                 return BadRequest(response);
             }
 
-            return Ok(response);
+            if (!(response is IOk<Claims> ok) || ok.Data == null || !ok.Data.Any())
+            {
+                return BadRequest("Claims data is missing.");
+            }
+
+            var claims = ok.Data.First();
+
+            Console.WriteLine($"Claims for user {signin.Email}: userId={claims.userId}, companyId={claims.companyId}, role={claims.role}");
+            string accessToken;
+
+            try
+            {
+                 accessToken = _jwtService.GenerateAccessTokenAsync(claims);
+            }
+            catch (Exception ex) 
+            {
+                accessToken = "";
+                Console.WriteLine(ex);
+            }
+
+
+            string refreshToken ;
+
+            try
+            {
+                refreshToken = _jwtService.GenerateRefreshTokenAsync();
+            }
+            catch (Exception ex)
+            {
+                refreshToken = "";
+                Console.WriteLine(ex);
+            }
+
+            _httpOnly.SetHttpOnlyCookie(accessToken, refreshToken, Response);
+
+            return Ok(new
+            {
+                message = response.Message,
+                accessToken = accessToken,
+                refreshToken = refreshToken
+            });
         }
 
         [HttpPost("sign-up")]

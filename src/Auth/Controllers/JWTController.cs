@@ -1,4 +1,5 @@
 ﻿using Auth.service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibraries.model;
@@ -16,17 +17,31 @@ namespace Auth.Controllers
             _jwtService = jwtService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetToken()
+        public class Clam
+        {
+            public Guid userId { get; set; }
+            public Guid companyId { get; set; }
+            public CompanyUserRole role { get; set; }
+        }
+
+        [HttpPost("token")]
+        public async Task<IActionResult> GetToken([FromBody]Clam clam)
         {
             var claims = new Claims
             {
-                userId = Guid.NewGuid(),
-                companyId = Guid.NewGuid(),
-                role = CompanyUserRole.Admin
+                userId = clam.userId,
+                companyId = clam.companyId,
+                role = clam.role
             };
-            var token = await _jwtService.GenerateAccessTokenAsync(claims);
+            var token = _jwtService.GenerateAccessTokenAsync(claims);
             return Ok(token);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Protect()
+        {
+            return Ok("Token is valid.");
         }
     }
 }

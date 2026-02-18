@@ -1,6 +1,9 @@
-﻿using SharedLibraries.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using SharedLibraries.Database;
 using SharedLibraries.Factory;
-using Microsoft.EntityFrameworkCore;
+using SharedLibraries.model;
+using System.ComponentModel.Design;
+using System.Security.Claims;
 
 namespace Auth.service
 {
@@ -12,37 +15,63 @@ namespace Auth.service
     public class SignIn : ISignIn
     {
         private readonly DatabaseModel _context;
+        private readonly jwtService _jwtService;
+        private readonly httpOnly _httpOnly;
 
-        public SignIn(DatabaseModel context)
+        public SignIn(DatabaseModel context, jwtService jwtService, httpOnly httpOnly)
         {
             _context = context;
+            _jwtService = jwtService;
+            _httpOnly = httpOnly;
         }
 
         public async Task<IResponse> SignInAsync(string email, string password)
         {
-            if (string.IsNullOrEmpty(email))
+            try
             {
-                return ResponseFactory.Error("Email cannot be empty.");
-            }
+                if (string.IsNullOrEmpty(email))
+                {
+                    return ResponseFactory.Error("Email cannot be empty.");
+                }
 
-            if (string.IsNullOrEmpty(password))
+                if (string.IsNullOrEmpty(password))
+                {
+                    return ResponseFactory.Error("Password cannot be empty.");
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+
+                if (user == null)
+                {
+                    return ResponseFactory.Error("User not found.");
+                }
+
+                var userCompany = await _context.CompanyUsers
+                    .FirstOrDefaultAsync(cu => cu.UserId == user.Id);
+
+                if (user.Password != password)
+                {
+                    return ResponseFactory.Error("Incorrect password.");
+                }
+
+                Console.WriteLine($"User {email} {password} {user.Email} {user.Password} signed in successfully.");
+
+                var claims = new Claims
+                {
+                    userId = user.Id,
+                    companyId = userCompany?.CompanyId ?? Guid.Empty,
+                    role = userCompany?.Role ?? CompanyUserRole.Member
+                };
+
+                Console.WriteLine($"[CLAIMS] {claims} {claims.userId} {claims.companyId} {claims.role}");
+
+                return ResponseFactory.Ok<Claims>(claims, "Sign-in successful");
+            }
+            catch (Exception ex)
             {
-                return ResponseFactory.Error("Password cannot be empty.");
+                return ResponseFactory.Error($"Sign-in error: {ex}");
             }
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-
-            if (user == null)
-            {
-                return ResponseFactory.Error("User not found.");
-            }
-
-            if(user.Password != password)
-            {
-                return ResponseFactory.Error("Incorrect password.");
-            }
-
-            return ResponseFactory.Ok<object>("Sign-in successful.");
         }
     }
 }
