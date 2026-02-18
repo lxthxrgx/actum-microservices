@@ -19,6 +19,11 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<SignIn>();
 builder.Services.AddScoped<SignUp>();
+builder.Services.AddScoped<jwtService>();
+
+builder.Services.Configure<AuthOptions>(
+    builder.Configuration.GetSection("JWT")
+);
 
 var app = builder.Build();
 
