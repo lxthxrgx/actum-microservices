@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SharedLibraries.Factory
 {
-    public interface IResponse
+   public interface IResponse
    {
         bool Success { get; set; }
         string Message { get; set; }
