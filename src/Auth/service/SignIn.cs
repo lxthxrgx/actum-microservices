@@ -58,7 +58,7 @@ namespace Auth.service
                 var claims = new Claims
                 {
                     userId = user.Id,
-                    companyId = userCompany?.CompanyId ?? Guid.Empty,
+                    Company = userCompany?.CompanyId ?? Guid.Empty,
                     role = userCompany?.Role ?? CompanyUserRole.Member
                 };
 

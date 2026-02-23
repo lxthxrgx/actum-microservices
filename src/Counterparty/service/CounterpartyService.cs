@@ -53,8 +53,31 @@ namespace Counterparty.service
             return counterparty;
         }
 
-        public async Task UpdateCounterparty(){
+        public async Task<CounterpartyModel> UpdateCounterparty(CounterpartyModel counterparty)
+        {
+            if (counterparty == null)
+            {
+                return null;
+            }
+
+
             
+            var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                await _context.Counterparties.AddAsync(counterparty);
+                await _context.SaveChangesAsync();
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                Console.WriteLine($"Error creating counterparty: {ex.Message}");
+            }
+
+            return counterparty;
         }
 
         public async Task DeleteCounterparty(){

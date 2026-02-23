@@ -19,14 +19,14 @@ namespace Auth.service
     public interface IClaims
     {
         Guid userId { get; set; }
-        Guid? companyId { get; set; }
+        Guid? Company { get; set; }
         CompanyUserRole role { get; set; }
     }
 
     public class Claims : IClaims
     {
         public Guid userId { get; set; }
-        public Guid? companyId { get; set; }
+        public Guid? Company { get; set; }
         public CompanyUserRole role { get; set; }
     }
 
@@ -39,9 +39,9 @@ namespace Auth.service
                 new Claim(ClaimTypes.NameIdentifier, claims.userId.ToString()),
                 new Claim(ClaimTypes.Role, claims.role.ToString())
             };
-            if (claims.companyId.HasValue)
+            if (claims.Company.HasValue)
             {
-                claimsList.Add(new Claim("companyId", claims.companyId.Value.ToString()));
+                claimsList.Add(new Claim("Company", claims.Company.Value.ToString()));
             }
             return claimsList;
         }

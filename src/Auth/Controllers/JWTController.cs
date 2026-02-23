@@ -30,7 +30,7 @@ namespace Auth.Controllers
             var claims = new Claims
             {
                 userId = clam.userId,
-                companyId = clam.companyId,
+                Company = clam.companyId,
                 role = clam.role
             };
             var token = _jwtService.GenerateAccessTokenAsync(claims);
