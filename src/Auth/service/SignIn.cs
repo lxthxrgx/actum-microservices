@@ -55,16 +55,12 @@ namespace Auth.service
                     return ResponseFactory.Error("Incorrect password.");
                 }
 
-                Console.WriteLine($"User {email} {password} {user.Email} {user.Password} signed in successfully.");
-
                 var claims = new Claims
                 {
                     userId = user.Id,
                     companyId = userCompany?.CompanyId ?? Guid.Empty,
                     role = userCompany?.Role ?? CompanyUserRole.Member
                 };
-
-                Console.WriteLine($"[CLAIMS] {claims} {claims.userId} {claims.companyId} {claims.role}");
 
                 return ResponseFactory.Ok<Claims>(claims, "Sign-in successful");
             }

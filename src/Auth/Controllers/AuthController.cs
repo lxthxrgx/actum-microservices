@@ -53,7 +53,6 @@ namespace Auth.Controllers
 
             var claims = ok.Data.First();
 
-            Console.WriteLine($"Claims for user {signin.Email}: userId={claims.userId}, companyId={claims.companyId}, role={claims.role}");
             string accessToken;
 
             try
@@ -63,7 +62,6 @@ namespace Auth.Controllers
             catch (Exception ex) 
             {
                 accessToken = "";
-                Console.WriteLine(ex);
             }
 
 
@@ -76,7 +74,6 @@ namespace Auth.Controllers
             catch (Exception ex)
             {
                 refreshToken = "";
-                Console.WriteLine(ex);
             }
 
             _httpOnly.SetHttpOnlyCookie(accessToken, refreshToken, Response);

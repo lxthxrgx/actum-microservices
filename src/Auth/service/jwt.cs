@@ -81,13 +81,10 @@ namespace Auth.service
 
                 var accessToken = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-                Console.WriteLine("accessToken (func): ", accessToken);
-
                 return accessToken;
             }
             catch (Exception ex) 
             {
-                Console.WriteLine($"Error generating access token: {ex.Message}");
                 return null;
             }
            
@@ -101,12 +98,10 @@ namespace Auth.service
                 using var rng = RandomNumberGenerator.Create();
                 rng.GetBytes(randomNumber);
                 var refreshToken = Convert.ToBase64String(randomNumber);
-                Console.WriteLine("refresh token (func): ", refreshToken);
                 return refreshToken;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error generating refresh token: {ex.Message}");
                 return null;
             }
         }
