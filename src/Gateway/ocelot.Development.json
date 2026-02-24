@@ -7,8 +7,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "auth-service",
-          "Port": 8080
+          "Host": "localhost",
+          "Port": 5237
         }
       ]
     }

@@ -4,13 +4,13 @@ EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY ["src/Auth/Auth.csproj", "src/Auth/"]
+COPY ["src/Counterparty/Counterparty.csproj", "src/Counterparty/"]
 COPY ["SharedLibraries/SharedLibraries.csproj", "SharedLibraries/"]
-RUN dotnet restore "src/Auth/Auth.csproj"
+RUN dotnet restore "src/Counterparty/Counterparty.csproj"
 COPY . .
-RUN dotnet publish "src/Auth/Auth.csproj" -c Release -o /app/publish
+RUN dotnet publish "src/Counterparty/Counterparty.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "Auth.dll"]
+ENTRYPOINT ["dotnet", "Counterparty.dll"]
