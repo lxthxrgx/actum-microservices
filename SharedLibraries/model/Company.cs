@@ -9,7 +9,7 @@ namespace SharedLibraries.model
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; }
         public DateTime CreatedDate { get; set; }
-        public DateTime DeleteDate { get; set; }
+        public DateTime? DeleteDate { get; set; }
 
         public bool isActive { get; set; } = true;
 

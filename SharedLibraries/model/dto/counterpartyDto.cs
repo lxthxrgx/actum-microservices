@@ -6,10 +6,8 @@ namespace SharedLibraries.model.dto
 {
     public class counterpartyDto
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-
+        public Guid Id { get; set; }
         public Guid CompanyId { get; set; }
-
         public string Fullname { get; set; }
         public string ShortName { get; set; }
         public string Address { get; set; }
@@ -18,7 +16,7 @@ namespace SharedLibraries.model.dto
         public string ResPerson { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public string Status { get; set; }
+        public CounterpartyStatus Status { get; set; }
     }
 
     public class counterpartyIdDto

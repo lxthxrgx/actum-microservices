@@ -20,7 +20,7 @@ namespace SharedLibraries.model
         public string ResPerson { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public string Status { get; set; }
+        public CounterpartyStatus Status { get; set; }
 
         public List<GroupModel> Groups { get; set; } = new List<GroupModel>();
     }

@@ -28,7 +28,7 @@ namespace Counterparty.controllers
             return Ok(response);
         }
 
-        [HttpGet]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetCounterpartyById(counterpartyIdDto counterparty)
         {
             var response = await _counterpartyService.GetCounterpartyById(counterparty);
@@ -42,7 +42,7 @@ namespace Counterparty.controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCounterparty(counterpartyDto counterparty)
+        public async Task<IActionResult> CreateCounterparty(List<counterpartyDto> counterparty)
         {
             var response = await _counterpartyService.CreateCounterparty(counterparty);
             if (!response.Success)
@@ -53,7 +53,7 @@ namespace Counterparty.controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateCounterparty(counterpartyDto counterparty)
+        public async Task<IActionResult> UpdateCounterparty([FromBody] List<counterpartyDto> counterparty)
         {
             var response = await _counterpartyService.UpdateCounterparty(counterparty);
             if (!response.Success)
@@ -64,7 +64,7 @@ namespace Counterparty.controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteCounterparty(counterpartyDeleteDto counterparty)
+        public async Task<IActionResult> DeleteCounterparty(List<counterpartyDeleteDto> counterparty)
         {
             var response = await _counterpartyService.DeleteCounterparty(counterparty);
             if (!response.Success)

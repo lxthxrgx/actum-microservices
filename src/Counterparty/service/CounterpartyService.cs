@@ -21,7 +21,7 @@ namespace Counterparty.service
                 return ResponseFactory.Error("No counterparties found");
             }
 
-            return ResponseFactory.Ok<object>(Counterparty);
+            return ResponseFactory.Ok(Counterparty);
         }
 
         public async Task<IResponse> GetCounterpartyById(counterpartyIdDto counterparty)
@@ -36,7 +36,7 @@ namespace Counterparty.service
             return ResponseFactory.Ok<object>(Counterparty, "Counterparty");
         }
 
-        public async Task<IResponse> CreateCounterparty(counterpartyDto counterparty)
+        public async Task<IResponse> CreateCounterparty(List<counterpartyDto> counterparty)
         {
             if(counterparty == null)
             {
@@ -47,21 +47,67 @@ namespace Counterparty.service
 
             try
             {
-                var newCounterpaty = new CounterpartyModel
+                foreach (var counterpartyDto in counterparty)
                 {
-                    Id = counterparty.Id,
-                    CompanyId = counterparty.CompanyId,
-                    Fullname = counterparty.Fullname,
-                    ShortName = counterparty.ShortName,
-                    Address = counterparty.Address,
-                    BankAccount = counterparty.BankAccount,
-                    ResPerson = counterparty.ResPerson,
-                    Phone = counterparty.Phone,
-                    Email = counterparty.Email,
-                    Status = counterparty.Status
-                };
+                    var newCounterpaty = new CounterpartyModel
+                    {
+                        CompanyId = counterpartyDto.CompanyId,
+                        Fullname = counterpartyDto.Fullname,
+                        ShortName = counterpartyDto.ShortName,
+                        Address = counterpartyDto.Address,
+                        BankAccount = counterpartyDto.BankAccount,
+                        ResPerson = counterpartyDto.ResPerson,
+                        Phone = counterpartyDto.Phone,
+                        Email = counterpartyDto.Email,
+                        Status = counterpartyDto.Status
+                    };
 
-                await _context.Counterparties.AddAsync(newCounterpaty);
+                    await _context.Counterparties.AddAsync(newCounterpaty);
+                }
+                await _context.SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                return ResponseFactory.Error($"Error creating counterparty: {ex.Message}");
+            }
+
+            return ResponseFactory.Ok<object>(counterparty);
+        }
+
+        public async Task<IResponse> UpdateCounterparty(List<counterpartyDto> counterparty)
+        {
+            if (counterparty == null || !counterparty.Any())
+                return ResponseFactory.Error("This Counterparty empty");
+
+            var ids = counterparty.Select(x => x.Id).ToList();
+
+            var existing = await _context.Counterparties
+                .Where(x => ids.Contains(x.Id))
+                .ToListAsync();
+
+            var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                foreach (var item in counterparty)
+                {
+                    var entity = existing.FirstOrDefault(x => x.Id == item.Id);
+                    if (entity == null) continue;
+
+                    entity.CompanyId = item.CompanyId;
+                    entity.Fullname = item.Fullname;
+                    entity.ShortName = item.ShortName;
+                    entity.Address = item.Address;
+                    entity.BankAccount = item.BankAccount;
+                    entity.ResPerson = item.ResPerson;
+                    entity.Phone = item.Phone;
+                    entity.Email = item.Email;
+                    entity.Status = item.Status;
+                    _context.Counterparties.Update(entity);
+                }
+
                 await _context.SaveChangesAsync();
 
                 transaction.Commit();
@@ -75,78 +121,35 @@ namespace Counterparty.service
             return ResponseFactory.Ok<object>(counterparty);
         }
 
-        public async Task<IResponse> UpdateCounterparty(counterpartyDto counterparty)
+        public async Task<IResponse> DeleteCounterparty(List<counterpartyDeleteDto> counterparty)
         {
-            if (counterparty == null)
-            {
+            if (counterparty == null || !counterparty.Any())
                 return ResponseFactory.Error("This Counterparty empty");
-            }
 
-            var user = await _context.Counterparties.FirstOrDefaultAsync(x => x.Id == counterparty.Id);
+            var ids = counterparty.Select(x => x.Id).ToList();
 
-            if (user == null)
-            {
-                return ResponseFactory.Error("This Counterparty not found");
-            }
+            var existing = await _context.Counterparties
+                .Where(x => ids.Contains(x.Id))
+                .ToListAsync();
+
+            if (!existing.Any())
+                return ResponseFactory.Error("Counterparties not found");
 
             var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-
-                user.Id = counterparty.Id;
-                user.CompanyId = counterparty.CompanyId;
-                user.Fullname = counterparty.Fullname;
-                user.ShortName = counterparty.ShortName;
-                user.Address = counterparty.Address;
-                user.BankAccount = counterparty.BankAccount;
-                user.ResPerson = counterparty.ResPerson;
-                user.Phone = counterparty.Phone;
-                user.Email = counterparty.Email;
-                user.Status = counterparty.Status;
-
-                _context.Counterparties.Update(user);
+                _context.Counterparties.RemoveRange(existing);
                 await _context.SaveChangesAsync();
-
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
-                return ResponseFactory.Error($"Error creating counterparty: {ex.Message}");
+                await transaction.RollbackAsync();
+                return ResponseFactory.Error($"Error deleting counterparty: {ex.Message}");
             }
 
-            return ResponseFactory.Ok<object>(counterparty);
-        }
-
-        public async Task<IResponse> DeleteCounterparty(counterpartyDeleteDto counterparty)
-        {
-            if (counterparty == null)
-            {
-                return ResponseFactory.Error("This Counterparty empty");
-            }
-
-            var counterpartyToDelete = await _context.Counterparties.FirstOrDefaultAsync(x => x.Id == counterparty.Id);
-
-            if (counterpartyToDelete == null)
-            {
-                return ResponseFactory.Error("This Counterparty not found");
-            }
-
-            var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            {
-                await _context.Counterparties.Where(x => x.Id == counterparty.Id).ExecuteDeleteAsync();
-                await _context.SaveChangesAsync();
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                transaction.Rollback();
-                return ResponseFactory.Error($"Error creating counterparty: {ex.Message}");
-            }
-            return ResponseFactory.Ok<object>(counterparty, "Counterparty deleted");
+            return ResponseFactory.Ok<object>(counterparty, "Counterparties deleted");
         }
     }
 }
