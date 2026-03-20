@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SharedLibraries.Database;
@@ -11,9 +12,11 @@ using SharedLibraries.Database;
 namespace SharedLibraries.Migrations
 {
     [DbContext(typeof(DatabaseModel))]
-    partial class DatabaseModelModelSnapshot : ModelSnapshot
+    [Migration("20260320132949_UpdateSublease")]
+    partial class UpdateSublease
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -293,17 +296,13 @@ namespace SharedLibraries.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("AktDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ContractEndDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("ContractEndDate2")
+                    b.Property<DateTime?>("ContractEndDate2")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ContractNumber")
@@ -318,6 +317,9 @@ namespace SharedLibraries.Migrations
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("IsContinuation")
+                        .HasColumnType("boolean");
 
                     b.Property<double>("RentalFee")
                         .HasColumnType("double precision");
