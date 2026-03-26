@@ -34,7 +34,7 @@ namespace Sublease.controllers
         {
             var response = await _service.GetSubleaseById(id);
 
-            if (response.Success)
+            if (!response.Success)
             {
                 return BadRequest(response);
             }
@@ -47,7 +47,7 @@ namespace Sublease.controllers
         {
             var response = await _service.CreateSublease(sublease);
 
-            if (response.Success)
+            if (!response.Success)
             {
                 return BadRequest(response);
             }
@@ -60,7 +60,7 @@ namespace Sublease.controllers
         {
             var response = await _service.UpdateSublease(sublease);
 
-            if (response.Success)
+            if (!response.Success)
             {
                 return BadRequest(response);
             }
@@ -73,7 +73,7 @@ namespace Sublease.controllers
         {
             var response = await _service.DeleteSubleases(sublease);
 
-            if (response.Success)
+            if (!response.Success)
             {
                 return BadRequest(response);
             }

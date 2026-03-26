@@ -14,6 +14,7 @@ namespace SharedLibraries.model
 
         public string Fullname { get; set; }
         public string ShortName { get; set; }
+        public string GroupName { get; set; }
         public string Address { get; set; }
         public string BankAccount { get; set; }
 

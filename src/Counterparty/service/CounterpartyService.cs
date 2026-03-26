@@ -54,6 +54,7 @@ namespace Counterparty.service
                         CompanyId = counterpartyDto.CompanyId,
                         Fullname = counterpartyDto.Fullname,
                         ShortName = counterpartyDto.ShortName,
+                        GroupName = counterpartyDto.GroupName,
                         Address = counterpartyDto.Address,
                         BankAccount = counterpartyDto.BankAccount,
                         ResPerson = counterpartyDto.ResPerson,
@@ -99,6 +100,7 @@ namespace Counterparty.service
                     entity.CompanyId = item.CompanyId;
                     entity.Fullname = item.Fullname;
                     entity.ShortName = item.ShortName;
+                    entity.GroupName = item.GroupName;
                     entity.Address = item.Address;
                     entity.BankAccount = item.BankAccount;
                     entity.ResPerson = item.ResPerson;

@@ -47,7 +47,7 @@ namespace Sublease.service
                         ContractEndDate = item.ContractEndDate,
                         IsContinuation = item.IsContinuation,
                         ContractEndDate2 = item.ContractEndDate2,
-                        RentalFee = item.RentalFee2,
+                        RentalFee = item.RentalFee,
                         RentalFee2 = item.RentalFee2,
                         Group = null!,
                         Done = item.Done

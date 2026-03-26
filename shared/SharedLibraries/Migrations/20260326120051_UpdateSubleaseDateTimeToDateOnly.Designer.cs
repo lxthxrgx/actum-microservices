@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SharedLibraries.Database;
@@ -11,9 +12,11 @@ using SharedLibraries.Database;
 namespace SharedLibraries.Migrations
 {
     [DbContext(typeof(DatabaseModel))]
-    partial class DatabaseModelModelSnapshot : ModelSnapshot
+    [Migration("20260326120051_UpdateSubleaseDateTimeToDateOnly")]
+    partial class UpdateSubleaseDateTimeToDateOnly
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,10 +105,6 @@ namespace SharedLibraries.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Fullname")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("GroupName")
                         .IsRequired()
                         .HasColumnType("text");
 
