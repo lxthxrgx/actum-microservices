@@ -13,7 +13,7 @@ namespace SharedLibraries.model.dto
         public string Address { get; set; } = string.Empty;
         public double Area { get; set; } = 1.0;
         public bool IsAlert { get; set; } = false;
-        public DateTime? DateCloseDepartment { get; set; }
+        public DateOnly? DateCloseDepartment { get; set; }
     }
 
     public class GroupDtoResponse : GroupDto

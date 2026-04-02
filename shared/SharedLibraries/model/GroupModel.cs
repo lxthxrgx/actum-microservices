@@ -19,7 +19,7 @@ namespace SharedLibraries.model
         public string Address { get; set; }
         public double Area { get; set; } = 1.0;
         public bool IsAlert { get; set; } = false;
-        public DateTime? DateCloseDepartment { get; set; } = DateTime.MinValue;
+        public DateOnly? DateCloseDepartment { get; set; }
 
         public List<GuardModel> Guard { get; set; } = new List<GuardModel>();
         public List<SubleaseModel> Sublease { get; set; } = new List<SubleaseModel>();

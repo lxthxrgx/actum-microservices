@@ -43,7 +43,7 @@ namespace Sublease.controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(List<subleaseDto> sublease)
+        public async Task<IActionResult> Post([FromBody] List<subleaseDto> sublease)
         {
             var response = await _service.CreateSublease(sublease);
 
