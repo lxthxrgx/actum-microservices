@@ -83,6 +83,30 @@
           "Port": 7028
         }
       ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/guard/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/guard/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7295
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/guard",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/guard",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7295
+        }
+      ]
     }
   ],
   "GlobalConfiguration": {

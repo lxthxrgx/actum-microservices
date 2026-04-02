@@ -16,8 +16,8 @@ namespace SharedLibraries.model
         public string OhronnaComp { get; set; }
         public string NumDog { get; set; }
         public string NumDog2 { get; set; }
-        public DateTime StrokDii { get; set; }
-        public DateTime? StrokDii2 { get; set; }
+        public DateOnly StrokDii { get; set; }
+        public DateOnly? StrokDii2 { get; set; }
         public string? ResPerson { get; set; }
         public string? Phone { get; set; }
         public string? Email { get; set; }
