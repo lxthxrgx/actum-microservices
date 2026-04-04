@@ -20,7 +20,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.1.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../SharedLibraries/SharedLibraries.csproj" />
+    <ProjectReference Include="../../shared/SharedLibraries/SharedLibraries.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,11 +4,14 @@ services:
       context: ../src/Gateway
       dockerfile: Dockerfile
     ports:
-      - "3000:8080"
+      - "3001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
     depends_on:
       - auth-service
+      - counterparty-service
+      - groups-service
+      - sublease-service
 
   auth-service:
     build:
@@ -16,6 +19,43 @@ services:
       dockerfile: src/Auth/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=auth_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  counterparty-service:
+    build:
+      context: ..
+      dockerfile: src/Counterparty/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=counterparty_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  groups-service:
+    build:
+      context: ..
+      dockerfile: src/Groups/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=groups_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  sublease-service:
+    build:
+      context: ..
+      dockerfile: src/Sublease/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=sublease_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   postgres:
     build:
@@ -27,6 +67,11 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:

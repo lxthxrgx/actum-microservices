@@ -5,7 +5,7 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ["src/Counterparty/Counterparty.csproj", "src/Counterparty/"]
-COPY ["SharedLibraries/SharedLibraries.csproj", "SharedLibraries/"]
+COPY ["shared/SharedLibraries/SharedLibraries.csproj", "shared/SharedLibraries/"]
 RUN dotnet restore "src/Counterparty/Counterparty.csproj"
 COPY . .
 RUN dotnet publish "src/Counterparty/Counterparty.csproj" -c Release -o /app/publish
