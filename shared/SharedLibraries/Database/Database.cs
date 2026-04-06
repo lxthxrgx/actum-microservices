@@ -21,8 +21,8 @@ namespace SharedLibraries.Database
         public DbSet<SubleaseFiles> SubleasesFiles { get; set; }
 
         public DbSet<GuardModel> Guards { get; set; }
-        public DbSet<GuardNotes> GuardsNotes { get; set; }
-        public DbSet<GuardFiles> GuardsFiles { get; set; }
+        //public DbSet<GuardNotes> GuardsNotes { get; set; }
+        //public DbSet<GuardFiles> GuardsFiles { get; set; }
 
         public DatabaseModel(DbContextOptions<DatabaseModel> options) : base(options)
         {
@@ -87,17 +87,17 @@ namespace SharedLibraries.Database
               .HasForeignKey(e => e.SubleaseId)
               .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<GuardModel>()
-              .HasMany(e => e.GuardNotes)
-              .WithOne(e => e.Guard)
-              .HasForeignKey(e => e.GuardId)
-              .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<GuardModel>()
+            //  .HasMany(e => e.GuardNotes)
+            //  .WithOne(e => e.Guard)
+            //  .HasForeignKey(e => e.GuardId)
+            //  .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<GuardModel>()
-              .HasMany(e => e.GuardFiles)
-              .WithOne(e => e.Guard)
-              .HasForeignKey(e => e.GuardId)
-              .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<GuardModel>()
+            //  .HasMany(e => e.GuardFiles)
+            //  .WithOne(e => e.Guard)
+            //  .HasForeignKey(e => e.GuardId)
+            //  .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Users>()
                 .HasIndex(u => u.Email)

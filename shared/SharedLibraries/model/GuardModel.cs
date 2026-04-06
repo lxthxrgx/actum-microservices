@@ -22,27 +22,27 @@ namespace SharedLibraries.model
         public string? Phone { get; set; }
         public string? Email { get; set; }
 
-        public List<GuardNotes> GuardNotes { get; set; } = new List<GuardNotes>();
-        public List<GuardFiles> GuardFiles { get; set; } = new List<GuardFiles>();  
+        //public List<GuardNotes> GuardNotes { get; set; } = new List<GuardNotes>();
+        //public List<GuardFiles> GuardFiles { get; set; } = new List<GuardFiles>();  
     }
 
-    public class GuardNotes
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
+    //public class GuardNotes
+    //{
+    //    public Guid Id { get; set; } = Guid.NewGuid();
 
-        public Guid GuardId { get; set; }
-        public GuardModel Guard { get; set; } = new GuardModel();
+    //    public Guid GuardId { get; set; }
+    //    public GuardModel Guard { get; set; } = new GuardModel();
 
-        public string? Note { get; set; }
-    }
+    //    public string? Note { get; set; }
+    //}
 
-    public class GuardFiles
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
+    //public class GuardFiles
+    //{
+    //    public Guid Id { get; set; } = Guid.NewGuid();
 
-        public Guid GuardId { get; set; }
-        public GuardModel Guard { get; set; } = new GuardModel();
+    //    public Guid GuardId { get; set; }
+    //    public GuardModel Guard { get; set; } = new GuardModel();
 
-        public string? FilePath { get; set; }
-    }
+    //    public string? FilePath { get; set; }
+    //}
 }

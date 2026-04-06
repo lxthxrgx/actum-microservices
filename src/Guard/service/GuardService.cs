@@ -54,13 +54,15 @@ namespace Guard.service
                         ResPerson = guard.ResPerson,
                         Phone = guard.Phone,
                         Email = guard.Email,
-                        GuardNotes = null!,
-                        GuardFiles = null!
+                        Group = null!,
+                        //GuardNotes = null!,
+                        //GuardFiles = null!
                     };
 
                     var entry = _context.Guards.Add(newGuard);
-                    entry.Reference(g => g.GuardNotes).IsLoaded = true;
-                    entry.Reference(g => g.GuardFiles).IsLoaded = true;
+                    entry.Reference(g => g.Group).IsLoaded = true;
+                    //entry.Reference(g => g.GuardNotes).IsLoaded = true;
+                    //entry.Reference(g => g.GuardFiles).IsLoaded = true;
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

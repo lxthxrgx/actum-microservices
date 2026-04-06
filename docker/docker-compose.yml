@@ -19,7 +19,7 @@ services:
       dockerfile: src/Auth/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=auth_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=Actum;Username=aadcmtiunmDev;Password=tVJMgxfxzkf48RAc
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,7 +30,7 @@ services:
       dockerfile: src/Counterparty/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=counterparty_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=Actum;Username=aadcmtiunmDev;Password=tVJMgxfxzkf48RAc
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,7 +41,7 @@ services:
       dockerfile: src/Groups/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=groups_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=Actum;Username=aadcmtiunmDev;Password=tVJMgxfxzkf48RAc
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,7 +52,7 @@ services:
       dockerfile: src/Sublease/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=sublease_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=Actum;Username=aadcmtiunmDev;Password=tVJMgxfxzkf48RAc
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,7 +68,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U aadcmtiunmDev"]
       interval: 5s
       timeout: 5s
       retries: 5
