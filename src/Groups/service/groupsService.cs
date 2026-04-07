@@ -46,18 +46,18 @@ namespace Groups.service
                     {
                         NumberGroup = group.NumberGroup,
                         CounterpartyId = group.CounterpartyId,
-                        CompanyId = group.CompanyId,
+                        //CompanyId = group.CompanyId,
                         Address = group.Address,
                         Area = group.Area,
                         IsAlert = group.IsAlert,
                         DateCloseDepartment = group.DateCloseDepartment,
                         Counterparty = null!,
-                        Company = null!
+                        //Company = null!
                     };
 
                     var entry = _context.Groups.Add(newGroup);
                     entry.Reference(g => g.Counterparty).IsLoaded = true;
-                    entry.Reference(g => g.Company).IsLoaded = true;
+                    //entry.Reference(g => g.Company).IsLoaded = true;
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -88,7 +88,7 @@ namespace Groups.service
                     }
                     existingGroup.NumberGroup = group.NumberGroup;
                     existingGroup.CounterpartyId = group.CounterpartyId;
-                    existingGroup.CompanyId = group.CompanyId;
+                    //existingGroup.CompanyId = group.CompanyId;
                     existingGroup.Address = group.Address;
                     existingGroup.Area = group.Area;
                     existingGroup.IsAlert = group.IsAlert;

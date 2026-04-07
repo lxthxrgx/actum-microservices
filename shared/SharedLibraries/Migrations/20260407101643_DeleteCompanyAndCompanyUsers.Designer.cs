@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SharedLibraries.Database;
@@ -11,9 +12,11 @@ using SharedLibraries.Database;
 namespace SharedLibraries.Migrations
 {
     [DbContext(typeof(DatabaseModel))]
-    partial class DatabaseModelModelSnapshot : ModelSnapshot
+    [Migration("20260407101643_DeleteCompanyAndCompanyUsers")]
+    partial class DeleteCompanyAndCompanyUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,40 +96,11 @@ namespace SharedLibraries.Migrations
                     b.Property<int>("NumberGroup")
                         .HasColumnType("integer");
 
-                    b.Property<int>("RentType")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CounterpartyId");
 
                     b.ToTable("Groups");
-                });
-
-            modelBuilder.Entity("SharedLibraries.model.GroupRentInfo", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RentTypeDiscriminator")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("character varying(13)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId")
-                        .IsUnique();
-
-                    b.ToTable("GroupRentInfos");
-
-                    b.HasDiscriminator<string>("RentTypeDiscriminator").HasValue("GroupRentInfo");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("SharedLibraries.model.GuardModel", b =>
@@ -287,68 +261,6 @@ namespace SharedLibraries.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("SharedLibraries.model.RentType1Info", b =>
-                {
-                    b.HasBaseType("SharedLibraries.model.GroupRentInfo");
-
-                    b.Property<string>("CertNumber")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("CertNumber");
-
-                    b.Property<string>("Issued")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SeriesCert")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("Type1");
-                });
-
-            modelBuilder.Entity("SharedLibraries.model.RentType2Info", b =>
-                {
-                    b.HasBaseType("SharedLibraries.model.GroupRentInfo");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Num")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Num");
-
-                    b.HasDiscriminator().HasValue("Type2");
-                });
-
-            modelBuilder.Entity("SharedLibraries.model.SubleaseRentInfo", b =>
-                {
-                    b.HasBaseType("SharedLibraries.model.GroupRentInfo");
-
-                    b.Property<string>("Edrpou")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Person")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("RentNumber")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("RentNumber");
-
-                    b.Property<string>("Rnokpp")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
-
-                    b.HasDiscriminator().HasValue("Sublease");
-                });
-
             modelBuilder.Entity("SharedLibraries.model.GroupModel", b =>
                 {
                     b.HasOne("SharedLibraries.model.CounterpartyModel", "Counterparty")
@@ -358,17 +270,6 @@ namespace SharedLibraries.Migrations
                         .IsRequired();
 
                     b.Navigation("Counterparty");
-                });
-
-            modelBuilder.Entity("SharedLibraries.model.GroupRentInfo", b =>
-                {
-                    b.HasOne("SharedLibraries.model.GroupModel", "Group")
-                        .WithOne("RentInfo")
-                        .HasForeignKey("SharedLibraries.model.GroupRentInfo", "GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("SharedLibraries.model.GuardModel", b =>
@@ -423,8 +324,6 @@ namespace SharedLibraries.Migrations
             modelBuilder.Entity("SharedLibraries.model.GroupModel", b =>
                 {
                     b.Navigation("Guard");
-
-                    b.Navigation("RentInfo");
 
                     b.Navigation("Sublease");
                 });

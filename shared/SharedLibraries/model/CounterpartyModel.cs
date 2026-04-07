@@ -9,8 +9,8 @@ namespace SharedLibraries.model
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        public Guid CompanyId { get; set; }
-        public Company Company { get; set; }
+        //public Guid CompanyId { get; set; }
+        //public Company Company { get; set; }
 
         public string Fullname { get; set; }
         public string ShortName { get; set; }

@@ -8,13 +8,14 @@ namespace SharedLibraries.Database
     public class DatabaseModel : DbContext
     {
         public DbSet<Users> Users { get; set; }
-        public DbSet<CompanyUser> CompanyUsers { get; set; }
-        public DbSet<Company> Company { get; set; }
+        //public DbSet<CompanyUser> CompanyUsers { get; set; }
+        //public DbSet<Company> Company { get; set; }
 
         public DbSet<CounterpartyModel> Counterparties { get; set; }
 
         public DbSet<GroupModel> Groups { get; set; }
-        public DbSet<GroupFiles> GroupsFiles { get; set; }
+        public DbSet<GroupRentInfo> GroupRentInfos { get; set; }
+        //public DbSet<GroupFiles> GroupsFiles { get; set; }
 
         public DbSet<SubleaseModel> Subleases { get; set; }
         public DbSet<SubleaseNotes> SubleasesNotes { get; set; }
@@ -33,29 +34,29 @@ namespace SharedLibraries.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Users>()
-                .HasMany(e => e.CompanyUsers)
-                .WithOne(e => e.User)
-                .HasForeignKey(e => e.UserId)
-                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Users>()
+            //    .HasMany(e => e.CompanyUsers)
+            //    .WithOne(e => e.User)
+            //    .HasForeignKey(e => e.UserId)
+            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
        
-            modelBuilder.Entity<Company>()
-                .HasMany(e => e.CompanyUsers)
-                .WithOne(e => e.Company)
-                .HasForeignKey(e => e.CompanyId)
-                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Company>()
+            //    .HasMany(e => e.CompanyUsers)
+            //    .WithOne(e => e.Company)
+            //    .HasForeignKey(e => e.CompanyId)
+            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Company>()
-                .HasMany(e => e.Counterparties)
-                .WithOne(e => e.Company)
-                .HasForeignKey(e => e.CompanyId)
-                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Company>()
+            //    .HasMany(e => e.Counterparties)
+            //    .WithOne(e => e.Company)
+            //    .HasForeignKey(e => e.CompanyId)
+            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Company>()
-                .HasMany(e => e.Groups)
-                .WithOne(e => e.Company)
-                .HasForeignKey(e => e.CompanyId)
-                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Company>()
+            //    .HasMany(e => e.Groups)
+            //    .WithOne(e => e.Company)
+            //    .HasForeignKey(e => e.CompanyId)
+            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CounterpartyModel>()
                .HasMany(e => e.Groups)
@@ -74,6 +75,18 @@ namespace SharedLibraries.Database
               .WithOne(e => e.Group)
               .HasForeignKey(e => e.GroupId)
               .IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<GroupRentInfo>()
+            .HasDiscriminator<string>("RentTypeDiscriminator")
+            .HasValue<SubleaseRentInfo>("Sublease")
+            .HasValue<RentType1Info>("Type1")
+            .HasValue<RentType2Info>("Type2");
+
+            modelBuilder.Entity<GroupModel>()
+                .HasOne(g => g.RentInfo)
+                .WithOne(r => r.Group)
+                .HasForeignKey<GroupRentInfo>(r => r.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<SubleaseModel>()
               .HasMany(e => e.SubleaseNotes)
@@ -103,12 +116,16 @@ namespace SharedLibraries.Database
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            modelBuilder.Entity<CompanyUser>()
-                .HasIndex(cu => new { cu.UserId, cu.CompanyId })
-                .IsUnique();
+            //modelBuilder.Entity<CompanyUser>()
+            //    .HasIndex(cu => new { cu.UserId, cu.CompanyId })
+            //    .IsUnique();
 
-            modelBuilder.Entity<CompanyUser>()
-                .HasIndex(cu => new { cu.CompanyId, cu.IsActive });
+            //modelBuilder.Entity<CompanyUser>()
+            //    .HasIndex(cu => new { cu.CompanyId, cu.IsActive });
+
+            modelBuilder.Entity<SubleaseRentInfo>().Property(x => x.RentNumber).HasColumnName("RentNumber");
+            modelBuilder.Entity<RentType1Info>().Property(x => x.CertNumber).HasColumnName("CertNumber");
+            modelBuilder.Entity<RentType2Info>().Property(x => x.Num).HasColumnName("Num");
 
             base.OnModelCreating(modelBuilder);
         }

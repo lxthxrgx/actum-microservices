@@ -12,6 +12,6 @@ namespace SharedLibraries.model
         public string Password { get; set; }
         public DateTime DateRegistration { get; set; } = DateTime.UtcNow;
 
-        public List<CompanyUser> CompanyUsers { get; set; } = new List<CompanyUser>();
+        //public List<CompanyUser> CompanyUsers { get; set; } = new List<CompanyUser>();
     }
 }

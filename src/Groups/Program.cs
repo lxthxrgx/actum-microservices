@@ -16,6 +16,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<groupsService>();
+builder.Services.AddScoped<GroupInfoService>();
 
 builder.Services.AddCors(options =>
 {
