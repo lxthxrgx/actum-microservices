@@ -31,7 +31,6 @@ namespace SharedLibraries.model
         public string Edryofop { get; set; }
 
     }
-
     public class CounterpartyLLC : CounterpartyModel
     {
         public string Rnokpp { get; set; }

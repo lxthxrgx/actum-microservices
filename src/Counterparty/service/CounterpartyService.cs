@@ -51,7 +51,6 @@ namespace Counterparty.service
                 {
                     var newCounterpaty = new CounterpartyModel
                     {
-                        CompanyId = counterpartyDto.CompanyId,
                         Fullname = counterpartyDto.Fullname,
                         ShortName = counterpartyDto.ShortName,
                         GroupName = counterpartyDto.GroupName,
@@ -97,7 +96,6 @@ namespace Counterparty.service
                     var entity = existing.FirstOrDefault(x => x.Id == item.Id);
                     if (entity == null) continue;
 
-                    entity.CompanyId = item.CompanyId;
                     entity.Fullname = item.Fullname;
                     entity.ShortName = item.ShortName;
                     entity.GroupName = item.GroupName;

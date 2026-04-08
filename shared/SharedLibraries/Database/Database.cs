@@ -64,6 +64,11 @@ namespace SharedLibraries.Database
                .HasForeignKey(e => e.CounterpartyId)
                .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<CounterpartyModel>()
+                .HasDiscriminator<string>("Discriminator")
+                .HasValue<CounterpartyLLC>("LLC")
+                .HasValue<CounterpartyFop>("FOP");
+
             modelBuilder.Entity<GroupModel>()
                .HasMany(e => e.Sublease)
                .WithOne(e => e.Group)

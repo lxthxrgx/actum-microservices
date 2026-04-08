@@ -68,7 +68,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 8080
+          "Port": 5274
         }
       ]
     },
@@ -80,7 +80,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 8080
+          "Port": 5274
         }
       ]
     },
