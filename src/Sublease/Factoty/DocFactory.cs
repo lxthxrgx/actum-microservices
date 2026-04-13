@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SharedLibraries.components;
 using SharedLibraries.Database;
 using Sublease.Builder;
-using SharedLibraries.components;
+using System.Text.RegularExpressions;
 using XDoc;
 
 namespace Lease.Factory
@@ -63,6 +64,28 @@ namespace Lease.Factory
     // SUBLEASE / TOV
     public class SubleaseContractWithActAndAnnexTov : SubleaseDocument
     {
+        public string Doublezero(double num)
+        {
+            return $"{num:N2}".Replace('.', ',');
+        }
+        public string SanitizeDirectoryName(string name)
+        {
+            var invalidChars = Path.GetInvalidFileNameChars();
+            var sanitized = new string(name
+                .Where(ch => !invalidChars.Contains(ch))
+                .ToArray());
+            return sanitized;
+        }
+        public string RenameGog(string Name)
+        {
+            string invalidChars = new string(Path.GetInvalidFileNameChars());
+
+            string pattern = "[" + Regex.Escape(invalidChars) + "]";
+
+            string output = Regex.Replace(Name, pattern, "_");
+
+            return output;
+        }
         public SubleaseContractWithActAndAnnexTov(DatabaseModel context) : base(context) { }
 
         public override async Task CreateAsync(Guid subleaseId)
@@ -75,30 +98,37 @@ namespace Lease.Factory
 
             Console.WriteLine($"CounterpartyLLC is null: {data.CounterpartyLLC == null}");
             Console.WriteLine($"IsFop: {data.IsFop}");
+
             var llc = data.CounterpartyLLC
                 ?? throw new InvalidOperationException("Expected LLC counterparty.");
             Console.WriteLine($"llc ok: {llc.Fullname}");
+
             var templatePath = ConfigHelper.Configuration["sublease-tov:sublease-agreement-tov"];
             Console.WriteLine($"Template path: {templatePath}");
-            Console.WriteLine($"Template path: {templatePath}");
+
             var processor = new XPathProcessor(templatePath, "C:\\Dev\\");
 
-            var bankAccount = data.CounterpartyLLC?.BankAccount
-                           ?? data.CounterpartyFop?.BankAccount
-                           ?? "";
-
             processor.WriteXmlTree("DateTime", DateTime.Now.ToString("dd/MM/yyyy"));
-            processor.WriteXmlTree("address", data.Group.Address);
+            processor.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
+            processor.WriteXmlTree("PIB", llc.Fullname);
+            processor.WriteXmlTree("rnokpp", llc.Rnokpp);
             processor.WriteXmlTree("area", data.Group.Area.ToString());
+            processor.WriteXmlTree("address_p", data.Group.Address);
+            processor.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(llc.BankAccount ?? ""));
             processor.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
-            processor.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(bankAccount));
-            processor.WriteXmlTree("StrokDii", data.Sublease.ContractEndDate.ToString("dd/MM/yyyy"));
-            processor.WriteXmlTree("ContractNum", data.Sublease.ContractNumber);
-            processor.WriteXmlTree("ContractDate", data.Sublease.ContractSigningDate.ToString("dd/MM/yyyy"));
-            processor.WriteXmlTree("suma", data.Sublease.RentalFee.ToString("F2"));
-            processor.WriteXmlTree("sum_text", NumToText.SumToText(data.Sublease.RentalFee));
+            processor.WriteXmlTree("sum_text", NumToText.SumToText(Convert.ToDouble(data.Sublease.RentalFee)));
+            processor.WriteXmlTree("suma", Doublezero(Convert.ToDouble(data.Sublease.RentalFee)));
+            processor.WriteXmlTree("Director", llc.Director);
+            processor.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
 
-            processor.Save($"11\\11");
+            string folder = $"C:\\Dev\\{data.Group.NumberGroup}-{SanitizeDirectoryName(llc.GroupName)}";
+            string fileNameDog = $"{RenameGog(data.Sublease.ContractNumber)}-{llc.GroupName}-договір";
+            string safeFileNameDog = RenameGog(fileNameDog);
+
+            Console.WriteLine($"Saving to: {folder}\\{safeFileNameDog}");
+            Directory.CreateDirectory(folder);
+
+            processor.Save($"{data.Group.NumberGroup}-{SanitizeDirectoryName(llc.GroupName)}\\{safeFileNameDog}");
         }
     }
 

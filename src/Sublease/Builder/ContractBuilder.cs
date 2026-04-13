@@ -10,6 +10,8 @@ namespace Sublease.Builder
         string BankAccount,
         string Address,
         string Director,
+        string ShortNameDirector,
+        string GroupName,
         CounterpartyStatus Status
     );
 
@@ -19,6 +21,7 @@ namespace Sublease.Builder
         string BankAccount,
         string Address,
         string ResPerson,
+        string ShortName,
         CounterpartyStatus Status
     );
 
@@ -88,6 +91,8 @@ namespace Sublease.Builder
                         llc.BankAccount,
                         llc.Address,
                         llc.Director,
+                        llc.ShortNameDirector,
+                        llc.GroupName,
                         llc.Status
                     );
                     break;
@@ -99,6 +104,7 @@ namespace Sublease.Builder
                         fop.BankAccount,
                         fop.Address,
                         fop.ResPerson,
+                        fop.ShortName,
                         fop.Status
                     );
                     break;
