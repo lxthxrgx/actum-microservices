@@ -14,14 +14,46 @@ namespace Counterparty.service
             _context = context;
         }
 
-        public async Task<IResponse> GetCounterparty(){
-            var Counterparty = await _context.Counterparties.ToListAsync();
-            if(Counterparty == null)
-            {
-                return ResponseFactory.Error("No counterparties found");
-            }
+        public async Task<IResponse> GetCounterparty()
+        {
+            var list = await _context.Counterparties.ToListAsync();
 
-            return ResponseFactory.Ok(Counterparty);
+            if (list == null || !list.Any())
+                return ResponseFactory.Error("No counterparties found");
+
+            var result = list.Select(x =>
+            {
+                var dto = new counterpartyDto
+                {
+                    Id = x.Id,
+                    Fullname = x.Fullname,
+                    ShortName = x.ShortName,
+                    GroupName = x.GroupName,
+                    Address = x.Address,
+                    BankAccount = x.BankAccount,
+                    ResPerson = x.ResPerson,
+                    Phone = x.Phone,
+                    Email = x.Email,
+                    Status = x.Status,
+                };
+
+                switch (x)
+                {
+                    case CounterpartyFop fop:
+                        dto.Edryofop = fop.Edryofop;
+                        dto.Rnokpp = fop.Rnokpp;
+                        break;
+                    case CounterpartyLLC llc:
+                        dto.Rnokpp = llc.Rnokpp;
+                        dto.Director = llc.Director;
+                        dto.ShortNameDirector = llc.ShortNameDirector;
+                        break;
+                }
+
+                return dto;
+            }).ToList();
+
+            return ResponseFactory.Ok(result);
         }
 
         public async Task<IResponse> GetCounterpartyById(counterpartyIdDto counterparty)
@@ -47,22 +79,40 @@ namespace Counterparty.service
 
             try
             {
-                foreach (var counterpartyDto in counterparty)
+                foreach (var dto in counterparty)
                 {
-                    var newCounterpaty = new CounterpartyModel
-                    {
-                        Fullname = counterpartyDto.Fullname,
-                        ShortName = counterpartyDto.ShortName,
-                        GroupName = counterpartyDto.GroupName,
-                        Address = counterpartyDto.Address,
-                        BankAccount = counterpartyDto.BankAccount,
-                        ResPerson = counterpartyDto.ResPerson,
-                        Phone = counterpartyDto.Phone,
-                        Email = counterpartyDto.Email,
-                        Status = counterpartyDto.Status
-                    };
+                    CounterpartyModel newCounterparty;
+                    Console.WriteLine($">>> Status int value: {(int)dto.Status}");
+                    Console.WriteLine($">>> Is Fop: {dto.Status == CounterpartyStatus.Fop}");
 
-                    await _context.Counterparties.AddAsync(newCounterpaty);
+                    if (dto.Status == CounterpartyStatus.Fop)
+                    {
+                        newCounterparty = new CounterpartyFop
+                        {
+                            Edryofop = dto.Edryofop,
+                        };
+                    }
+                    else
+                    {
+                        newCounterparty = new CounterpartyLLC
+                        {
+                            Director = dto.Director,
+                            ShortNameDirector = dto.ShortNameDirector
+                        };
+                    }
+
+                    newCounterparty.Fullname = dto.Fullname;
+                    newCounterparty.ShortName = dto.ShortName;
+                    newCounterparty.GroupName = dto.GroupName;
+                    newCounterparty.Address = dto.Address;
+                    newCounterparty.BankAccount = dto.BankAccount;
+                    newCounterparty.ResPerson = dto.ResPerson;
+                    newCounterparty.Phone = dto.Phone;
+                    newCounterparty.Email = dto.Email;
+                    newCounterparty.Status = dto.Status;
+                    newCounterparty.Rnokpp = dto.Rnokpp;
+
+                    await _context.Counterparties.AddAsync(newCounterparty);
                 }
                 await _context.SaveChangesAsync();
                 transaction.Commit();
@@ -105,17 +155,28 @@ namespace Counterparty.service
                     entity.Phone = item.Phone;
                     entity.Email = item.Email;
                     entity.Status = item.Status;
+                    entity.Rnokpp = item.Rnokpp;
+
+                    if (entity is CounterpartyFop fop)
+                    {
+                        fop.Edryofop = item.Edryofop;
+                    }
+                    else if (entity is CounterpartyLLC llc)
+                    {
+                        llc.Director = item.Director;
+                        llc.ShortNameDirector = item.ShortNameDirector;
+                    }
+
                     _context.Counterparties.Update(entity);
                 }
 
                 await _context.SaveChangesAsync();
-
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
-                return ResponseFactory.Error($"Error creating counterparty: {ex.Message}");
+                await transaction.RollbackAsync();
+                return ResponseFactory.Error($"Error updating counterparty: {ex.Message}");
             }
 
             return ResponseFactory.Ok<object>(counterparty);

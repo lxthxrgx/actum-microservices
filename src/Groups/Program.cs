@@ -1,11 +1,19 @@
 using Groups.service;
 using Microsoft.EntityFrameworkCore;
 using SharedLibraries.Database;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<DatabaseModel>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Default"));
+    options.EnableSensitiveDataLogging(false);
+    options.UseLoggerFactory(LoggerFactory.Create(builder => builder
+        .AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning)
+        .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning)));
+});
+
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -17,6 +25,10 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<groupsService>();
 builder.Services.AddScoped<GroupInfoService>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddCors(options =>
 {

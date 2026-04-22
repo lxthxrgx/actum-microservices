@@ -26,6 +26,10 @@ namespace Groups.controllers
             return Ok(response);
         }
 
+        [HttpGet("{groupId}/rent")]
+        public async Task<IActionResult> GetRentInfo(Guid groupId)
+            => Ok(await _groupInfoService.GetGroupInfo(groupId));
+
         [HttpPost("{groupId}/rent/sublease")]
         public async Task<IActionResult> CreateSublease(Guid groupId, [FromBody] SubleaseRentInfoDto dto)
             => Ok(await _groupInfoService.CreateSubleaseRentInfo(groupId, dto));

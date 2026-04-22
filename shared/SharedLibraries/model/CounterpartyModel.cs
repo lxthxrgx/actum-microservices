@@ -21,6 +21,7 @@ namespace SharedLibraries.model
         public string ResPerson { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
+        public string Rnokpp { get; set; }
         public CounterpartyStatus Status { get; set; }
 
         public List<GroupModel> Groups { get; set; } = new List<GroupModel>();
@@ -29,11 +30,9 @@ namespace SharedLibraries.model
     public class CounterpartyFop : CounterpartyModel
     {
         public string Edryofop { get; set; }
-
     }
     public class CounterpartyLLC : CounterpartyModel
     {
-        public string Rnokpp { get; set; }
         public string Director { get; set; }
         public string ShortNameDirector { get; set; }
     }

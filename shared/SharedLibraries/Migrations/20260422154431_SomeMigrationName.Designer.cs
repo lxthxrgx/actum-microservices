@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SharedLibraries.Database;
@@ -11,9 +12,11 @@ using SharedLibraries.Database;
 namespace SharedLibraries.Migrations
 {
     [DbContext(typeof(DatabaseModel))]
-    partial class DatabaseModelModelSnapshot : ModelSnapshot
+    [Migration("20260422154431_SomeMigrationName")]
+    partial class SomeMigrationName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,10 +61,6 @@ namespace SharedLibraries.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ResPerson")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Rnokpp")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -308,6 +307,16 @@ namespace SharedLibraries.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Rnokpp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.ToTable("Counterparties", t =>
+                        {
+                            t.Property("Rnokpp")
+                                .HasColumnName("CounterpartyFop_Rnokpp");
+                        });
+
                     b.HasDiscriminator().HasValue("FOP");
                 });
 
@@ -316,6 +325,10 @@ namespace SharedLibraries.Migrations
                     b.HasBaseType("SharedLibraries.model.CounterpartyModel");
 
                     b.Property<string>("Director")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Rnokpp")
                         .IsRequired()
                         .HasColumnType("text");
 

@@ -5,7 +5,14 @@ using SharedLibraries.Database;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<DatabaseModel>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Default"));
+    options.EnableSensitiveDataLogging(false);
+    options.UseLoggerFactory(LoggerFactory.Create(builder => builder
+        .AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning)
+        .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning)));
+});
+
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

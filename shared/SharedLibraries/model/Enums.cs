@@ -6,7 +6,7 @@ namespace SharedLibraries.model
 {
     public enum CounterpartyStatus
     {
-        Tov,
-        Fop
+        Fop,
+        Tov
     }
 }

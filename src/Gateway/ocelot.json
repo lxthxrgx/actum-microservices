@@ -60,6 +60,32 @@
         }
       ]
     },
+
+    {
+      "UpstreamPathTemplate": "/api/groupInfo/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/groupInfo/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7079
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/groupInfo",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/groupInfo",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7079
+        }
+      ]
+    },
+
     {
       "UpstreamPathTemplate": "/api/sublease/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -68,7 +94,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 8080
+          "Port": 5274
         }
       ]
     },
@@ -80,7 +106,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 8080
+          "Port": 5274
         }
       ]
     },

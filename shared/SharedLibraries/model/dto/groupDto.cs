@@ -35,8 +35,6 @@ namespace SharedLibraries.model.dto
         public string Edrpou { get; set; } = string.Empty;
     }
 
-    // Уже есть SubleaseRentInfoDto — добавьте остальные два + общий
-
     public class RentType1InfoDto
     {
         public string CertNumber { get; set; } = string.Empty;
@@ -50,23 +48,25 @@ namespace SharedLibraries.model.dto
         public string Num { get; set; } = string.Empty;
     }
 
-    // Response DTO (добавляют Id и GroupId для ответа клиенту)
     public class SubleaseRentInfoDtoResponse : SubleaseRentInfoDto
     {
         public Guid Id { get; set; }
         public Guid GroupId { get; set; }
+        public GroupRentType RentTypeDiscriminator { get; set; } = GroupRentType.Sublease;
     }
 
     public class RentType1InfoDtoResponse : RentType1InfoDto
     {
         public Guid Id { get; set; }
         public Guid GroupId { get; set; }
+        public GroupRentType RentTypeDiscriminator { get; set; } = GroupRentType.Type1;
     }
 
     public class RentType2InfoDtoResponse : RentType2InfoDto
     {
         public Guid Id { get; set; }
         public Guid GroupId { get; set; }
+        public GroupRentType RentTypeDiscriminator { get; set; } = GroupRentType.Type2;
     }
 
 }

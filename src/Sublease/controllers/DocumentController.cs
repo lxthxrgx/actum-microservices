@@ -36,54 +36,22 @@ public class DocumentController : ControllerBase
     {
         try
         {
-            Console.WriteLine($"Sublease {subleaseId} not found.");
-            var sublease = await _context.Subleases
-                .Include(s => s.Group)
-                    .ThenInclude(g => g.RentInfo)
-                .Include(s => s.Group)
-                    .ThenInclude(g => g.Counterparty)
-                .Where(s => s.Id == subleaseId)
-                .FirstOrDefaultAsync()
-                ?? throw new InvalidOperationException($"Sublease {subleaseId} not found.");
+            var builder = new ContractDataBuilder(_context);
+            var data = await builder.BuildAsync(subleaseId);
 
-            Console.WriteLine($"RentInfo type: {sublease.Group.RentInfo?.GetType().Name}");
-            Console.WriteLine($"RentInfo RentType value: {sublease.Group.RentInfo?.RentType}");
-            Console.WriteLine($"Group: {sublease.Group?.Id}");
-            Console.WriteLine($"Counterparty: {sublease.Group?.Counterparty?.GetType().Name}");
-            Console.WriteLine($"Unknown rent type. {sublease.Group.RentInfo?.RentType.GetType().Name}");
-            var leaseType = sublease.Group.RentInfo?.RentType switch
+            var contractorType = data.IsFop ? ContractorType.Fop : ContractorType.Tov;
+            var leaseType = data.RentInfo?.RentType switch
             {
                 GroupRentType.Sublease => LeaseType.Sublease,
-                GroupRentType.Type1 => LeaseType.DirectLease,
-                GroupRentType.Type2 => LeaseType.FinancialLease,
-                null => throw new InvalidOperationException("RentInfo is null."),
+                GroupRentType.Type1 => LeaseType.Rent1,
+                GroupRentType.Type2 => LeaseType.Rent2,
                 _ => throw new InvalidOperationException("Unknown rent type.")
             };
 
-            Console.WriteLine($"Unknown counterparty type: {sublease.Group.Counterparty.GetType().Name}");
-            var counterparty = sublease.Group.Counterparty
-                ?? throw new InvalidOperationException("Counterparty is null.");
-
-            var contractorType = counterparty switch
-            {
-                CounterpartyLLC => ContractorType.Tov,
-                CounterpartyFop => ContractorType.Fop,
-                _ => throw new InvalidOperationException("Unknown counterparty type.")
-            };
-
-            var document = ContractDocumentFactory.Create(
-                leaseType,
-                contractorType,
-                docType,
-                _context);
-
+            var document = ContractDocumentFactory.Create(leaseType, contractorType, docType, _context);
             await document.CreateAsync(subleaseId);
 
             return Ok(new { message = "Document created." });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
         }
         catch (Exception ex)
         {

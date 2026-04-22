@@ -18,6 +18,12 @@ namespace SharedLibraries.model.dto
         public string Phone { get; set; }
         public string Email { get; set; }
         public CounterpartyStatus Status { get; set; }
+
+        public string? Edryofop { get; set; }
+        public string? Rnokpp { get; set; }
+
+        public string? Director { get; set; }
+        public string? ShortNameDirector { get; set; }
     }
 
     public class counterpartyIdDto

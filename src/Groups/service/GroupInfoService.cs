@@ -25,12 +25,44 @@ namespace Groups.service
 
         public async Task<IResponse> GetGroupInfo(Guid groupId)
         {
-            var data = await _context.GroupRentInfos.FirstOrDefaultAsync(g => g.Id == groupId);
+            var data = await _context.GroupRentInfos
+                .FirstOrDefaultAsync(g => g.GroupId == groupId);
 
             if (data == null)
                 return ResponseFactory.Error("Group information not found.");
 
-            return ResponseFactory.Ok(data);
+            return data switch
+            {
+                SubleaseRentInfo s => ResponseFactory.Ok(new SubleaseRentInfoDtoResponse
+                {
+                    Id = s.Id,
+                    GroupId = s.GroupId,
+                    RentNumber = s.RentNumber,
+                    StartDate = s.StartDate,
+                    Person = s.Person,
+                    Rnokpp = s.Rnokpp,
+                    Edrpou = s.Edrpou,
+                    RentTypeDiscriminator = GroupRentType.Sublease
+                }),
+                RentType1Info t1 => ResponseFactory.Ok(new RentType1InfoDtoResponse
+                {
+                    Id = t1.Id,
+                    GroupId = t1.GroupId,
+                    CertNumber = t1.CertNumber,
+                    SeriesCert = t1.SeriesCert,
+                    Issued = t1.Issued,
+                    RentTypeDiscriminator = GroupRentType.Type1
+                }),
+                RentType2Info t2 => ResponseFactory.Ok(new RentType2InfoDtoResponse
+                {
+                    Id = t2.Id,
+                    GroupId = t2.GroupId,
+                    Date = t2.Date,
+                    Num = t2.Num,
+                    RentTypeDiscriminator = GroupRentType.Type2
+                }),
+                _ => ResponseFactory.Error("Unknown rent type.")
+            };
         }
 
         public async Task<IResponse> CreateSubleaseRentInfo(Guid groupId, SubleaseRentInfoDto dto)
