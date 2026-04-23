@@ -168,8 +168,6 @@ namespace Lease.Factory
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
-            Console.WriteLine("llc.Address: ", llc.Address);
-            Console.WriteLine("StrokDii: ", data.Sublease.ContractEndDate.ToString("dd/MM/yyyy"));
             var rentInfo = data.RentInfo as SubleaseRentInfo;
 
             // ── Договір ──────────────────────────────────────────────────────

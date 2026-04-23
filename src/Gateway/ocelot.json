@@ -99,6 +99,18 @@
       ]
     },
     {
+      "UpstreamPathTemplate": "/api/Document/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/Document/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5274
+        }
+      ]
+    },
+    {
       "UpstreamPathTemplate": "/api/sublease",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/sublease",
