@@ -8,22 +8,15 @@ namespace SharedLibraries.Database
     public class DatabaseModel : DbContext
     {
         public DbSet<Users> Users { get; set; }
-        //public DbSet<CompanyUser> CompanyUsers { get; set; }
-        //public DbSet<Company> Company { get; set; }
 
         public DbSet<CounterpartyModel> Counterparties { get; set; }
 
         public DbSet<GroupModel> Groups { get; set; }
         public DbSet<GroupRentInfo> GroupRentInfos { get; set; }
-        //public DbSet<GroupFiles> GroupsFiles { get; set; }
 
         public DbSet<SubleaseModel> Subleases { get; set; }
-        public DbSet<SubleaseNotes> SubleasesNotes { get; set; }
-        public DbSet<SubleaseFiles> SubleasesFiles { get; set; }
 
         public DbSet<GuardModel> Guards { get; set; }
-        //public DbSet<GuardNotes> GuardsNotes { get; set; }
-        //public DbSet<GuardFiles> GuardsFiles { get; set; }
 
         public DatabaseModel(DbContextOptions<DatabaseModel> options) : base(options)
         {
@@ -34,29 +27,6 @@ namespace SharedLibraries.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //modelBuilder.Entity<Users>()
-            //    .HasMany(e => e.CompanyUsers)
-            //    .WithOne(e => e.User)
-            //    .HasForeignKey(e => e.UserId)
-            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
-       
-            //modelBuilder.Entity<Company>()
-            //    .HasMany(e => e.CompanyUsers)
-            //    .WithOne(e => e.Company)
-            //    .HasForeignKey(e => e.CompanyId)
-            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
-
-            //modelBuilder.Entity<Company>()
-            //    .HasMany(e => e.Counterparties)
-            //    .WithOne(e => e.Company)
-            //    .HasForeignKey(e => e.CompanyId)
-            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
-
-            //modelBuilder.Entity<Company>()
-            //    .HasMany(e => e.Groups)
-            //    .WithOne(e => e.Company)
-            //    .HasForeignKey(e => e.CompanyId)
-            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CounterpartyModel>()
                .HasMany(e => e.Groups)
@@ -105,28 +75,9 @@ namespace SharedLibraries.Database
               .HasForeignKey(e => e.SubleaseId)
               .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
-            //modelBuilder.Entity<GuardModel>()
-            //  .HasMany(e => e.GuardNotes)
-            //  .WithOne(e => e.Guard)
-            //  .HasForeignKey(e => e.GuardId)
-            //  .IsRequired().OnDelete(DeleteBehavior.Cascade);
-
-            //modelBuilder.Entity<GuardModel>()
-            //  .HasMany(e => e.GuardFiles)
-            //  .WithOne(e => e.Guard)
-            //  .HasForeignKey(e => e.GuardId)
-            //  .IsRequired().OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<Users>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
-
-            //modelBuilder.Entity<CompanyUser>()
-            //    .HasIndex(cu => new { cu.UserId, cu.CompanyId })
-            //    .IsUnique();
-
-            //modelBuilder.Entity<CompanyUser>()
-            //    .HasIndex(cu => new { cu.CompanyId, cu.IsActive });
 
             modelBuilder.Entity<SubleaseRentInfo>().Property(x => x.RentNumber).HasColumnName("RentNumber");
             modelBuilder.Entity<RentType1Info>().Property(x => x.CertNumber).HasColumnName("CertNumber");

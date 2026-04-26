@@ -1,4 +1,3 @@
-using Gateway.Auth;
 using Gateway.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -17,7 +16,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 builder.Services
@@ -40,14 +40,30 @@ builder.Services
 builder.Services.AddControllers();
 builder.Services.AddOcelot();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseRouting();
+app.UseCors("AllowFrontend");
 app.UseMiddleware<CookieTokenMiddleware>();
 app.UseAuthentication();
+app.UseAuthorization();
 app.UseMiddleware<UserIdMiddleware>();
 
-app.UseCors("AllowFrontend");
-app.MapControllers();
-await app.UseOcelot();
+// Явно указываем что контроллеры обрабатываются здесь
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
+// Ocelot забирает всё остальное
+await app.UseOcelot();
 app.Run();

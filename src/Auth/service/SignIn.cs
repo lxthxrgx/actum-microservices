@@ -47,8 +47,8 @@ namespace Auth.service
                     return ResponseFactory.Error("User not found.");
                 }
 
-                var userCompany = await _context.CompanyUsers
-                    .FirstOrDefaultAsync(cu => cu.UserId == user.Id);
+                var userCompany = await _context.Users
+                    .FirstOrDefaultAsync(cu => cu.Id == user.Id);
 
                 if (user.Password != password)
                 {
@@ -58,8 +58,8 @@ namespace Auth.service
                 var claims = new Claims
                 {
                     userId = user.Id,
-                    Company = userCompany?.CompanyId ?? Guid.Empty,
-                    role = userCompany?.Role ?? CompanyUserRole.Member
+                    Name = user.Name,
+                    Email = user.Email,
                 };
 
                 return ResponseFactory.Ok<Claims>(claims, "Sign-in successful");

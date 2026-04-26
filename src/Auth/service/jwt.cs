@@ -20,14 +20,16 @@ namespace Auth.service
     {
         Guid userId { get; set; }
         Guid? Company { get; set; }
-        CompanyUserRole role { get; set; }
+        string Name { get; set; }   // ← добавить
+        string Email { get; set; }  // ← добавить
     }
 
     public class Claims : IClaims
     {
         public Guid userId { get; set; }
         public Guid? Company { get; set; }
-        public CompanyUserRole role { get; set; }
+        public string Name { get; set; }    // ← добавить
+        public string Email { get; set; }   // ← добавить
     }
 
     public static class ClaimsService
@@ -37,12 +39,9 @@ namespace Auth.service
             var claimsList = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, claims.userId.ToString()),
-                new Claim(ClaimTypes.Role, claims.role.ToString())
+                new Claim(ClaimTypes.Name, claims.Name),       // ← добавить
+                new Claim(ClaimTypes.Email, claims.Email),     // ← добавить
             };
-            if (claims.Company.HasValue)
-            {
-                claimsList.Add(new Claim("Company", claims.Company.Value.ToString()));
-            }
             return claimsList;
         }
     }

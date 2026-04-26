@@ -7,17 +7,17 @@
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
                 Expires = DateTime.UtcNow.AddDays(14)
             };
 
             response.Cookies.Append("accessToken", accessToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = false,
                 Expires = DateTime.UtcNow.AddMinutes(15),
-                SameSite = SameSiteMode.Strict
+                SameSite = SameSiteMode.Lax
             });
 
             response.Cookies.Append("refreshToken", refreshToken, cookieOptions);

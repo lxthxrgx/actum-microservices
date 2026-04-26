@@ -205,7 +205,7 @@ namespace SharedLibraries.Migrations
 
                     b.HasIndex("SubleaseId");
 
-                    b.ToTable("SubleasesFiles");
+                    b.ToTable("SubleaseFiles");
                 });
 
             modelBuilder.Entity("SharedLibraries.model.SubleaseModel", b =>
@@ -268,7 +268,7 @@ namespace SharedLibraries.Migrations
 
                     b.HasIndex("SubleaseId");
 
-                    b.ToTable("SubleasesNotes");
+                    b.ToTable("SubleaseNotes");
                 });
 
             modelBuilder.Entity("SharedLibraries.model.Users", b =>

@@ -21,7 +21,6 @@ namespace Auth.Controllers
         {
             public Guid userId { get; set; }
             public Guid companyId { get; set; }
-            public CompanyUserRole role { get; set; }
         }
 
         [HttpPost("token")]
@@ -31,7 +30,6 @@ namespace Auth.Controllers
             {
                 userId = clam.userId,
                 Company = clam.companyId,
-                role = clam.role
             };
             var token = _jwtService.GenerateAccessTokenAsync(claims);
             return Ok(token);

@@ -1,6 +1,4 @@
-﻿using Auth.service;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Auth.service;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibraries.Factory;
 using SharedLibraries.model;
@@ -11,23 +9,20 @@ namespace Auth.Controllers
     [ApiController]
     public class authController : ControllerBase
     {
-        private readonly SignIn _signInService;
-        private readonly SignUp _signUpService;
-        private readonly jwtService _jwtService;
-        private readonly httpOnly _httpOnly;
+        private readonly SignIn      _signInService;
+        private readonly SignUp      _signUpService;
+        private readonly jwtService  _jwtService;
 
-        public authController(SignIn signInService, SignUp signUpService,
-            jwtService jwtService, httpOnly httpOnly)
+        public authController(SignIn signInService, SignUp signUpService, jwtService jwtService)
         {
             _signInService = signInService;
             _signUpService = signUpService;
-            _httpOnly = httpOnly;
-            _jwtService = jwtService;
+            _jwtService    = jwtService;
         }
 
         public class SignInDto
         {
-            public string Email { get; set; }
+            public string Email    { get; set; }
             public string Password { get; set; }
         }
 
@@ -42,46 +37,21 @@ namespace Auth.Controllers
             var response = await _signInService.SignInAsync(signin.Email, signin.Password);
 
             if (!response.Success)
-            {
                 return BadRequest(response);
-            }
 
-            if (!(response is IOk<Claims> ok) || ok.Data == null || !ok.Data.Any())
-            {
+            if (response is not IOk<Claims> ok || ok.Data == null || !ok.Data.Any())
                 return BadRequest("Claims data is missing.");
-            }
 
             var claims = ok.Data.First();
 
-            string accessToken;
+            var accessToken  = _jwtService.GenerateAccessTokenAsync(claims);
+            var refreshToken = _jwtService.GenerateRefreshTokenAsync();
 
-            try
-            {
-                 accessToken = _jwtService.GenerateAccessTokenAsync(claims);
-            }
-            catch (Exception ex) 
-            {
-                accessToken = "";
-            }
-
-
-            string refreshToken ;
-
-            try
-            {
-                refreshToken = _jwtService.GenerateRefreshTokenAsync();
-            }
-            catch (Exception ex)
-            {
-                refreshToken = "";
-            }
-
-            _httpOnly.SetHttpOnlyCookie(accessToken, refreshToken, Response);
-
+            // Возвращаем токены в JSON — Gateway перехватит и установит HttpOnly куки
             return Ok(new
             {
-                message = response.Message,
-                accessToken = accessToken,
+                message      = response.Message,
+                accessToken  = accessToken,
                 refreshToken = refreshToken
             });
         }
@@ -92,9 +62,7 @@ namespace Auth.Controllers
             var response = await _signUpService.SignUpAsync(signup.Email, signup.Password, signup.Name);
 
             if (!response.Success)
-            {
                 return BadRequest(response);
-            }
 
             return Ok(response);
         }

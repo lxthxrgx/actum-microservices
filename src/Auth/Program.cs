@@ -17,6 +17,17 @@ builder.Services.AddDbContext<DatabaseModel>(options =>
         .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning)));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
@@ -72,6 +83,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+app.UseRouting();
+app.UseCors("AllowFrontend");
+app.UseAuthentication();
 //app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
