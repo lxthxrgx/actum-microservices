@@ -31,7 +31,6 @@ public class DocumentController : ControllerBase
     public async Task<IActionResult> SubleaseExtension(Guid subleaseId)
         => await GenerateAsync(subleaseId, ContractDocumentType.ExtensionAgreement);
 
-    // ── Спільна логіка ────────────────────────────────────
     private async Task<IActionResult> GenerateAsync(Guid subleaseId, ContractDocumentType docType)
     {
         try

@@ -649,6 +649,7 @@ namespace Lease.Factory
             Save(akt, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-акт");
 
             // ── Додаток ───────────────────────────────────────────────────────
+
             var dod = CreateProcessor("sublease:supplement-fop");
             dod.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
             dod.WriteXmlTree("DateTime", data.Sublease.ContractSigningDate.ToString("dd/MM/yyyy"));
