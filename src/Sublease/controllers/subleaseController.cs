@@ -80,5 +80,16 @@ namespace Sublease.controllers
 
             return Ok(response);
         }
+
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetSummary()
+        {
+            var response = await _service.GetSubleaseSummary();
+
+            if (!response.Success)
+                return BadRequest(response);
+
+            return Ok(response);
+        }
     }
 }

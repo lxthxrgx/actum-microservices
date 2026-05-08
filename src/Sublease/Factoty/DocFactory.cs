@@ -131,7 +131,8 @@ namespace Lease.Factory
     {
         protected readonly DatabaseModel _context;
         protected ContractDocument(DatabaseModel context) => _context = context;
-        public abstract Task CreateAsync(Guid subleaseId);
+        public abstract Task<List<string>> CreateAsync(Guid subleaseId);
+
     }
 
     public abstract class LeaseDocument : ContractDocument
@@ -147,12 +148,24 @@ namespace Lease.Factory
         protected XPathProcessor CreateProcessor(string configKey) =>
             new XPathProcessor(ConfigHelper.Configuration[configKey], ConfigHelper.Configuration["CustomSettings:path"]);
 
-        protected void Save(XPathProcessor p, ContractData data, string fileName)
+        protected string Save(XPathProcessor p, ContractData data, string fileName)
         {
             var groupName = data.CounterpartyLLC?.GroupName
                          ?? data.CounterpartyFop?.GroupName
                          ?? "unknown";
-            p.Save(DocHelper.SavePath(data.Group, groupName, fileName));
+
+            var relativePath = DocHelper.SavePath(data.Group, groupName, fileName);
+            var basePath = ConfigHelper.Configuration["CustomSettings:path"];
+
+            // p.Save принимает относительный путь и сам знает basePath
+            // просто создаём папку и передаём relativePath как раньше
+            var fullDir = Path.Combine(basePath, Path.GetDirectoryName(relativePath)!);
+            Directory.CreateDirectory(fullDir);
+
+            p.Save(relativePath);
+
+            // Возвращаем полный путь с .docx для чтения файла в контроллере
+            return Path.Combine(basePath, relativePath) + ".docx";
         }
     }
 
@@ -164,7 +177,7 @@ namespace Lease.Factory
     {
         public SubleaseContractWithActAndAnnexTov(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
@@ -191,7 +204,7 @@ namespace Lease.Factory
             dog.WriteXmlTree("subleaseDopName", rentInfo?.Person ?? "____");
             dog.WriteXmlTree("subleaseDopRnokpp", rentInfo != null ? DocHelper.GetSublessorId(rentInfo) : "____");
             dog.WriteXmlTree("subleaseDopStatus", rentInfo?.Edrpou ?? "____");
-            dog.Save($"{data.Sublease.ContractNumber}-{llc.GroupName}-договір");
+            var dogPath = Save(dog, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-договір");
 
             // ── Акт ──────────────────────────────────────────────────────────
             var akt = CreateProcessor("sublease-tov:sublease-act-tov");
@@ -210,7 +223,7 @@ namespace Lease.Factory
             akt.WriteXmlTree("suma", DocHelper.Doublezero(data.Sublease.RentalFee));
             akt.WriteXmlTree("Director", llc.Director);
             akt.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            akt.Save($"{data.Sublease.ContractNumber}-{llc.GroupName}-акт");
+            var aktPath = Save(akt, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-акт");
 
             // ── Додаток ───────────────────────────────────────────────────────
             var dod = CreateProcessor("sublease-tov:supplement-tov");
@@ -222,7 +235,9 @@ namespace Lease.Factory
             dod.WriteXmlTree("rnokpp", llc.Rnokpp);
             dod.WriteXmlTree("BanckAccount", llc.BankAccount ?? "");
             dod.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            dod.Save($"{data.Sublease.ContractNumber}-{llc.GroupName}-додаток");
+            var dodPath = Save(dod, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-додаток");
+
+            return new List<string> { dogPath, aktPath, dodPath };
         }
     }
 
@@ -230,7 +245,7 @@ namespace Lease.Factory
     {
         public SubleaseSupplementaryAgreementTov(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
@@ -249,7 +264,9 @@ namespace Lease.Factory
             p.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
             p.WriteXmlTree("BanckAccount", llc.BankAccount ?? "");
             p.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-припинення-ТОВ");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-припинення-ТОВ");
+
+            return new List<string> { path };
         }
     }
 
@@ -257,7 +274,7 @@ namespace Lease.Factory
     {
         public SubleaseReturnActTov(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
@@ -279,7 +296,9 @@ namespace Lease.Factory
             p.WriteXmlTree("sum_text", NumToText.SumToText(data.Sublease.RentalFee));
             p.WriteXmlTree("Director", llc.Director);
             p.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-повернення-ТОВ");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-повернення-ТОВ");
+
+            return new List<string> { path };
         }
     }
 
@@ -287,7 +306,7 @@ namespace Lease.Factory
     {
         public SubleaseExtensionAgreementTov(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
@@ -311,7 +330,9 @@ namespace Lease.Factory
             p.WriteXmlTree("subleaseDopName", rentInfo?.Person ?? "____");
             p.WriteXmlTree("rnokppSublessorDop", rentInfo != null ? DocHelper.GetSublessorId(rentInfo) : "____");
             p.WriteXmlTree("BanckAccount", llc.BankAccount ?? "");
-            Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-продовження");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-продовження");
+
+            return new List<string> { path };
         }
     }
 
@@ -323,21 +344,19 @@ namespace Lease.Factory
     {
         public SubleaseContractWithActAndAnnexFop(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var fop = data.CounterpartyFop ?? throw new InvalidOperationException("Expected FOP counterparty.");
             var rentInfo = data.RentInfo as SubleaseRentInfo;
 
-            // NOTE: CounterpartyFop.Rnokpp — add this property to the model if not yet present.
-
             // ── Договір ──────────────────────────────────────────────────────
-            var dog = CreateProcessor("sublease:sublease-agreement");
+            var dog = CreateProcessor("sublease:sublease-agreement-fop");
             dog.WriteXmlTree("DateTime", data.Sublease.ContractSigningDate.ToString("dd/MM/yyyy"));
             dog.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
             dog.WriteXmlTree("PIB", fop.Fullname);
             dog.WriteXmlTree("edruofop_Data", fop.Edryofop);
-            dog.WriteXmlTree("rnokpp", fop.Rnokpp ?? "");   // Rnokpp — add to CounterpartyFop
+            dog.WriteXmlTree("rnokpp", fop.Rnokpp ?? "");
             dog.WriteXmlTree("area", data.Group.Area.ToString());
             dog.WriteXmlTree("address_p", data.Group.Address);
             dog.WriteXmlTree("StrokDii", data.Sublease.ContractEndDate.ToString("dd/MM/yyyy"));
@@ -352,10 +371,10 @@ namespace Lease.Factory
             dog.WriteXmlTree("subleaseDopName", rentInfo?.Person ?? "____");
             dog.WriteXmlTree("subleaseDopRnokpp", rentInfo != null ? DocHelper.GetSublessorId(rentInfo) : "____");
             dog.WriteXmlTree("subleaseDopStatus", rentInfo?.Edrpou ?? "____");
-            Save(dog, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-договір-ФОП");
+            var dogPath = Save(dog, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-договір-ФОП");
 
             // ── Акт ──────────────────────────────────────────────────────────
-            var akt = CreateProcessor("sublease:sublease-act");
+            var akt = CreateProcessor("sublease-fop:sublease-act-fop");
             akt.WriteXmlTree("fullDate", NumToText.NumberMonthToText(data.Sublease.AktDate.ToString("dd/MM/yyyy")));
             akt.WriteXmlTree("DateTime", data.Sublease.ContractSigningDate.ToString("dd/MM/yyyy"));
             akt.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
@@ -371,10 +390,10 @@ namespace Lease.Factory
             akt.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
             akt.WriteXmlTree("sum_text", NumToText.SumToText(data.Sublease.RentalFee));
             akt.WriteXmlTree("suma", DocHelper.Doublezero(data.Sublease.RentalFee));
-            Save(akt, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-акт-ФОП");
+            var aktPath = Save(akt, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-акт-ФОП");
 
             // ── Додаток ───────────────────────────────────────────────────────
-            var dod = CreateProcessor("sublease:supplement-fop");
+            var dod = CreateProcessor("sublease-fop:supplement-fop");
             dod.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
             dod.WriteXmlTree("DateTime", data.Sublease.ContractSigningDate.ToString("dd/MM/yyyy"));
             dod.WriteXmlTree("address_p", data.Group.Address);
@@ -383,7 +402,9 @@ namespace Lease.Factory
             dod.WriteXmlTree("rnokpp", fop.Rnokpp ?? "");
             dod.WriteXmlTree("BanckAccount", fop.BankAccount ?? "");
             dod.WriteXmlTree("PIBS", fop.ResPerson);
-            Save(dod, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-додаток-ФОП");
+            var dodPath = Save(dod, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-додаток-ФОП");
+
+            return new List<string> { dogPath, aktPath, dodPath };
         }
     }
 
@@ -391,12 +412,12 @@ namespace Lease.Factory
     {
         public SubleaseSupplementaryAgreementFop(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var fop = data.CounterpartyFop ?? throw new InvalidOperationException("Expected FOP counterparty.");
 
-            var p = CreateProcessor("sublease:sublease-termination");
+            var p = CreateProcessor("sublease-fop:sublease-termination-fop");
             p.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
             p.WriteXmlTree("DateTime", data.Sublease.ContractSigningDate.ToString("dd/MM/yyyy"));
             p.WriteXmlTree("StrokDii", data.Sublease.ContractEndDate.AddDays(-1).ToString("dd/MM/yyyy"));
@@ -410,7 +431,9 @@ namespace Lease.Factory
             p.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
             p.WriteXmlTree("BanckAccount", fop.BankAccount ?? "");
             p.WriteXmlTree("PIBS", fop.ResPerson);
-            Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-припинення-ФОП");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-припинення-ФОП");
+
+            return new List<string> { path };
         }
     }
 
@@ -418,12 +441,12 @@ namespace Lease.Factory
     {
         public SubleaseReturnActFop(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var fop = data.CounterpartyFop ?? throw new InvalidOperationException("Expected FOP counterparty.");
 
-            var p = CreateProcessor("sublease:sublease-return-act");
+            var p = CreateProcessor("sublease-fop:sublease-return-act-fop");
             p.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
             p.WriteXmlTree("DateTime", data.Sublease.ContractSigningDate.ToString("dd/MM/yyyy"));
             p.WriteXmlTree("StrokDii", data.Sublease.ContractEndDate.ToString("dd/MM/yyyy"));
@@ -440,7 +463,9 @@ namespace Lease.Factory
             p.WriteXmlTree("PIBS", fop.ResPerson);
             p.WriteXmlTree("suma", DocHelper.Doublezero(data.Sublease.RentalFee));
             p.WriteXmlTree("sum_text", NumToText.SumToText(data.Sublease.RentalFee));
-            Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-повернення-ФОП");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-повернення-ФОП");
+
+            return new List<string> { path };
         }
     }
 
@@ -448,13 +473,13 @@ namespace Lease.Factory
     {
         public SubleaseExtensionAgreementFop(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var fop = data.CounterpartyFop ?? throw new InvalidOperationException("Expected FOP counterparty.");
             var rentInfo = data.RentInfo as SubleaseRentInfo;
 
-            var p = CreateProcessor("sublease:extension-contract-fop");
+            var p = CreateProcessor("sublease-fop:extension-contract-fop");
             p.WriteXmlTree("ContractNumber", data.Sublease.ContractNumber);
             p.WriteXmlTree("CreationContractDate", data.Sublease.ContractSigningDate.ToString("dd.MM.yyyy"));
             p.WriteXmlTree("CreationDate", data.Sublease.ContractEndDate.ToString("dd.MM.yyyy"));
@@ -472,19 +497,17 @@ namespace Lease.Factory
             p.WriteXmlTree("subleaseDopName", rentInfo?.Person ?? "____");
             p.WriteXmlTree("rnokppSublessorDop", rentInfo != null ? DocHelper.GetSublessorId(rentInfo) : "____");
             p.WriteXmlTree("BanckAccount", fop.BankAccount ?? "");
-            Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-продовження");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-продовження");
+
+            return new List<string> { path };
         }
     }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // RENT-1 (свідоцтво про право власності) / TOV
-    // ═══════════════════════════════════════════════════════════════════════════
 
     public class Rent1ContractWithActAndAnnexTov : LeaseDocument
     {
         public Rent1ContractWithActAndAnnexTov(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
@@ -508,7 +531,7 @@ namespace Lease.Factory
             dog.WriteXmlTree("Director", llc.Director);
             dog.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
             dog.WriteXmlTree("NaPid", naPid);
-            Save(dog, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-договір");
+            var dogPath = Save(dog, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-договір");
 
             // ── Акт ──────────────────────────────────────────────────────────
             var akt = CreateProcessor("rent-tov:rent-act-tov");
@@ -524,7 +547,7 @@ namespace Lease.Factory
             akt.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
             akt.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(llc.BankAccount ?? ""));
             akt.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            Save(akt, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-акт");
+            var aktPath = Save(akt, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-акт");
 
             // ── Додаток ───────────────────────────────────────────────────────
             var dod = CreateProcessor("sublease-tov:supplement-tov");
@@ -536,7 +559,9 @@ namespace Lease.Factory
             dod.WriteXmlTree("rnokpp", llc.Rnokpp);
             dod.WriteXmlTree("BanckAccount", llc.BankAccount ?? "");
             dod.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            Save(dod, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-додаток");
+            var dodPath = Save(dod, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-додаток");
+
+            return new List<string> { dogPath, aktPath, dodPath };
         }
     }
 
@@ -544,7 +569,7 @@ namespace Lease.Factory
     {
         public Rent1SupplementaryAgreementTov(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
@@ -563,7 +588,9 @@ namespace Lease.Factory
             p.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
             p.WriteXmlTree("BanckAccount", llc.BankAccount ?? "");
             p.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-припинення-ТОВ");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-припинення-ТОВ");
+
+            return new List<string> { path };
         }
     }
 
@@ -571,7 +598,7 @@ namespace Lease.Factory
     {
         public Rent1ReturnActTov(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
@@ -589,7 +616,9 @@ namespace Lease.Factory
             p.WriteXmlTree("address_p", data.Group.Address);
             p.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(llc.BankAccount ?? ""));
             p.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-повернення");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-повернення");
+
+            return new List<string> { path };
         }
     }
 
@@ -601,14 +630,13 @@ namespace Lease.Factory
     {
         public Rent1ContractWithActAndAnnexFop(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var fop = data.CounterpartyFop ?? throw new InvalidOperationException("Expected FOP counterparty.");
             var rentInfo = data.RentInfo as RentType1Info ?? throw new InvalidOperationException("Expected RentType1Info.");
             var naPid = DocHelper.BuildNaPidType1(rentInfo);
 
-            // ── Договір ──────────────────────────────────────────────────────
             var dog = CreateProcessor("rent-fop:rent-dog-fop");
             dog.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
             dog.WriteXmlTree("DateTime", data.Sublease.ContractSigningDate.ToString("dd/MM/yyyy"));
@@ -625,14 +653,12 @@ namespace Lease.Factory
             dog.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(fop.BankAccount ?? ""));
             dog.WriteXmlTree("PIBS", fop.ResPerson);
             dog.WriteXmlTree("NaPid", naPid);
-            // subleaseDopXXX — not applicable for Rent-1; written as blanks
             dog.WriteXmlTree("subleaseDopNum", "____");
             dog.WriteXmlTree("subleaseDopDate", "____");
             dog.WriteXmlTree("subleaseDopName", "____");
             dog.WriteXmlTree("subleaseDopRnokpp", "____");
-            Save(dog, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-договір");
+            var dogPath = Save(dog, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-договір");
 
-            // ── Акт ──────────────────────────────────────────────────────────
             var akt = CreateProcessor("rent-fop:rent-act-fop");
             akt.WriteXmlTree("fullDate", NumToText.NumberMonthToText(data.Sublease.AktDate.ToString("dd/MM/yyyy")));
             akt.WriteXmlTree("PIB", fop.Fullname);
@@ -646,9 +672,7 @@ namespace Lease.Factory
             akt.WriteXmlTree("address_p", data.Group.Address);
             akt.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(fop.BankAccount ?? ""));
             akt.WriteXmlTree("PIBS", fop.ResPerson);
-            Save(akt, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-акт");
-
-            // ── Додаток ───────────────────────────────────────────────────────
+            var aktPath = Save(akt, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-акт");
 
             var dod = CreateProcessor("sublease:supplement-fop");
             dod.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
@@ -659,7 +683,9 @@ namespace Lease.Factory
             dod.WriteXmlTree("rnokpp", fop.Rnokpp ?? "");
             dod.WriteXmlTree("BanckAccount", fop.BankAccount ?? "");
             dod.WriteXmlTree("PIBS", fop.ResPerson);
-            Save(dod, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-додаток");
+            var dodPath = Save(dod, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-додаток");
+
+            return new List<string> { dogPath, aktPath, dodPath };
         }
     }
 
@@ -667,7 +693,7 @@ namespace Lease.Factory
     {
         public Rent1SupplementaryAgreementFop(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var fop = data.CounterpartyFop ?? throw new InvalidOperationException("Expected FOP counterparty.");
@@ -686,7 +712,9 @@ namespace Lease.Factory
             p.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
             p.WriteXmlTree("BanckAccount", fop.BankAccount ?? "");
             p.WriteXmlTree("PIBS", fop.ResPerson);
-            Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-припинення-ФОП");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-припинення-ФОП");
+
+            return new List<string> { path };
         }
     }
 
@@ -694,7 +722,7 @@ namespace Lease.Factory
     {
         public Rent1ReturnActFop(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var fop = data.CounterpartyFop ?? throw new InvalidOperationException("Expected FOP counterparty.");
@@ -712,7 +740,9 @@ namespace Lease.Factory
             p.WriteXmlTree("address_p", data.Group.Address);
             p.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(fop.BankAccount ?? ""));
             p.WriteXmlTree("PIBS", fop.ResPerson);
-            Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-повернення");
+            var path = Save(p, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-повернення");
+
+            return new List<string> { path };
         }
     }
 
@@ -724,7 +754,7 @@ namespace Lease.Factory
     {
         public Rent2ContractWithActAndAnnexTov(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var llc = data.CounterpartyLLC ?? throw new InvalidOperationException("Expected LLC counterparty.");
@@ -747,7 +777,7 @@ namespace Lease.Factory
             dog.WriteXmlTree("Director", llc.Director);
             dog.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
             dog.WriteXmlTree("NaPid", naPid);
-            Save(dog, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-договір");
+            var dogPath = Save(dog, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-договір");
 
             var akt = CreateProcessor("rent-tov:rent-act-tov");
             akt.WriteXmlTree("fullDate", NumToText.NumberMonthToText(data.Sublease.AktDate.ToString("dd/MM/yyyy")));
@@ -762,7 +792,7 @@ namespace Lease.Factory
             akt.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
             akt.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(llc.BankAccount ?? ""));
             akt.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            Save(akt, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-акт");
+            var aktPath = Save(akt, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-акт");
 
             var dod = CreateProcessor("sublease-tov:supplement-tov");
             dod.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
@@ -773,7 +803,9 @@ namespace Lease.Factory
             dod.WriteXmlTree("rnokpp", llc.Rnokpp);
             dod.WriteXmlTree("BanckAccount", llc.BankAccount ?? "");
             dod.WriteXmlTree("PIBSDirector", llc.ShortNameDirector);
-            Save(dod, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-додаток");
+            var dodPath = Save(dod, data, $"{data.Sublease.ContractNumber}-{llc.GroupName}-додаток");
+
+            return new List<string> { dogPath, aktPath, dodPath };
         }
     }
 
@@ -781,7 +813,7 @@ namespace Lease.Factory
     {
         public Rent2ContractWithActAndAnnexFop(DatabaseModel context) : base(context) { }
 
-        public override async Task CreateAsync(Guid subleaseId)
+        public override async Task<List<string>> CreateAsync(Guid subleaseId)
         {
             var data = await GetDataAsync(subleaseId);
             var fop = data.CounterpartyFop ?? throw new InvalidOperationException("Expected FOP counterparty.");
@@ -808,7 +840,7 @@ namespace Lease.Factory
             dog.WriteXmlTree("subleaseDopDate", "____");
             dog.WriteXmlTree("subleaseDopName", "____");
             dog.WriteXmlTree("subleaseDopRnokpp", "____");
-            Save(dog, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-договір");
+            var dogPath = Save(dog, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-договір");
 
             var akt = CreateProcessor("rent-fop:rent-act-fop");
             akt.WriteXmlTree("fullDate", NumToText.NumberMonthToText(data.Sublease.AktDate.ToString("dd/MM/yyyy")));
@@ -823,7 +855,7 @@ namespace Lease.Factory
             akt.WriteXmlTree("address_p", data.Group.Address);
             akt.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(fop.BankAccount ?? ""));
             akt.WriteXmlTree("PIBS", fop.ResPerson);
-            Save(akt, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-акт");
+            var aktPath = Save(akt, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-акт");
 
             var dod = CreateProcessor("sublease:supplement-fop");
             dod.WriteXmlTree("DogovirSuborendu", data.Sublease.ContractNumber);
@@ -834,7 +866,9 @@ namespace Lease.Factory
             dod.WriteXmlTree("rnokpp", fop.Rnokpp ?? "");
             dod.WriteXmlTree("BanckAccount", fop.BankAccount ?? "");
             dod.WriteXmlTree("PIBS", fop.ResPerson);
-            Save(dod, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-додаток");
+            var dodPath = Save(dod, data, $"{data.Sublease.ContractNumber}-{fop.GroupName}-додаток");
+
+            return new List<string> { dogPath, aktPath, dodPath };
         }
     }
 
@@ -858,6 +892,27 @@ namespace Lease.Factory
     public class Rent2ReturnActFop : Rent1ReturnActFop
     {
         public Rent2ReturnActFop(DatabaseModel context) : base(context) { }
+    }
+
+    // Extension Agreement — reuses Sublease templates for all lease types
+    public class Rent1ExtensionAgreementTov : SubleaseExtensionAgreementTov
+    {
+        public Rent1ExtensionAgreementTov(DatabaseModel context) : base(context) { }
+    }
+
+    public class Rent1ExtensionAgreementFop : SubleaseExtensionAgreementFop
+    {
+        public Rent1ExtensionAgreementFop(DatabaseModel context) : base(context) { }
+    }
+
+    public class Rent2ExtensionAgreementTov : SubleaseExtensionAgreementTov
+    {
+        public Rent2ExtensionAgreementTov(DatabaseModel context) : base(context) { }
+    }
+
+    public class Rent2ExtensionAgreementFop : SubleaseExtensionAgreementFop
+    {
+        public Rent2ExtensionAgreementFop(DatabaseModel context) : base(context) { }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -898,11 +953,13 @@ namespace Lease.Factory
 
                 // ── Rent-1 / TOV ──────────────────────────────────────────────
                 (LeaseType.Rent1, ContractorType.Tov, ContractDocumentType.ContractWithActAndAnnex)
-                    => new Rent1ContractWithActAndAnnexTov(context),
+                   => new Rent1ContractWithActAndAnnexTov(context),
                 (LeaseType.Rent1, ContractorType.Tov, ContractDocumentType.SupplementaryAgreement)
                     => new Rent1SupplementaryAgreementTov(context),
                 (LeaseType.Rent1, ContractorType.Tov, ContractDocumentType.ReturnAct)
                     => new Rent1ReturnActTov(context),
+                (LeaseType.Rent1, ContractorType.Tov, ContractDocumentType.ExtensionAgreement)  // ← додати
+                    => new Rent1ExtensionAgreementTov(context),
 
                 // ── Rent-1 / FOP ──────────────────────────────────────────────
                 (LeaseType.Rent1, ContractorType.Fop, ContractDocumentType.ContractWithActAndAnnex)
@@ -911,6 +968,8 @@ namespace Lease.Factory
                     => new Rent1SupplementaryAgreementFop(context),
                 (LeaseType.Rent1, ContractorType.Fop, ContractDocumentType.ReturnAct)
                     => new Rent1ReturnActFop(context),
+                (LeaseType.Rent1, ContractorType.Fop, ContractDocumentType.ExtensionAgreement)  // ← додати
+                    => new Rent1ExtensionAgreementFop(context),
 
                 // ── Rent-2 / TOV ──────────────────────────────────────────────
                 (LeaseType.Rent2, ContractorType.Tov, ContractDocumentType.ContractWithActAndAnnex)
@@ -919,6 +978,8 @@ namespace Lease.Factory
                     => new Rent2SupplementaryAgreementTov(context),
                 (LeaseType.Rent2, ContractorType.Tov, ContractDocumentType.ReturnAct)
                     => new Rent2ReturnActTov(context),
+                (LeaseType.Rent2, ContractorType.Tov, ContractDocumentType.ExtensionAgreement)  // ← додати
+                    => new Rent2ExtensionAgreementTov(context),
 
                 // ── Rent-2 / FOP ──────────────────────────────────────────────
                 (LeaseType.Rent2, ContractorType.Fop, ContractDocumentType.ContractWithActAndAnnex)
@@ -927,6 +988,8 @@ namespace Lease.Factory
                     => new Rent2SupplementaryAgreementFop(context),
                 (LeaseType.Rent2, ContractorType.Fop, ContractDocumentType.ReturnAct)
                     => new Rent2ReturnActFop(context),
+                (LeaseType.Rent2, ContractorType.Fop, ContractDocumentType.ExtensionAgreement)  // ← додати
+                    => new Rent2ExtensionAgreementFop(context),
 
                 _ => throw new ArgumentOutOfRangeException(
                     $"Unknown combination: {leaseType}, {contractorType}, {docType}")

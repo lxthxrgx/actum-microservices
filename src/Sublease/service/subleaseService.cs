@@ -130,5 +130,40 @@ namespace Sublease.service
                 return ResponseFactory.Error(ex.Message);
             }
         }
+        public async Task<IResponse> GetSubleaseSummary()
+        {
+            try
+            {
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                var firstDayOfMonth = new DateOnly(today.Year, today.Month, 1);
+                var in30Days = today.AddDays(30);
+
+                var all = await _context.Subleases.ToListAsync();
+
+                var total = all.Count;
+                var newThisMonth = all.Count(s => s.ContractSigningDate >= firstDayOfMonth);
+                var active = all.Count(s => s.Done == false);
+                var expiringIn30 = all.Count(s =>
+                                        s.Done == false &&
+                                        s.ContractEndDate >= today &&
+                                        s.ContractEndDate <= in30Days);
+                var done = all.Count(s => s.Done == true);
+                var activePercent = total > 0 ? Math.Round((double)active / total * 100, 1) : 0;
+
+                return ResponseFactory.Ok(new subleaseSummaryDto
+                {
+                    Total = total,
+                    NewThisMonth = newThisMonth,
+                    Active = active,
+                    ActivePercent = activePercent,
+                    ExpiringIn30Days = expiringIn30,
+                    Done = done,
+                });
+            }
+            catch (Exception ex)
+            {
+                return ResponseFactory.Error(ex.Message);
+            }
+        }
     }
 }

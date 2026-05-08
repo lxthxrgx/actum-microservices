@@ -16,22 +16,23 @@ public class DocumentController : ControllerBase
     }
 
     [HttpPost("sublease/{subleaseId}/contract")]
-    public async Task<IActionResult> SubleaseContract(Guid subleaseId)
-        => await GenerateAsync(subleaseId, ContractDocumentType.ContractWithActAndAnnex);
+    public async Task<IActionResult> SubleaseContract(Guid subleaseId, [FromQuery] bool download = false)
+        => await GenerateAsync(subleaseId, ContractDocumentType.ContractWithActAndAnnex, download);
 
     [HttpPost("sublease/{subleaseId}/supplementary-agreement")]
-    public async Task<IActionResult> SubleaseSupplementaryAgreement(Guid subleaseId)
-        => await GenerateAsync(subleaseId, ContractDocumentType.SupplementaryAgreement);
+    public async Task<IActionResult> SubleaseSupplementaryAgreement(Guid subleaseId, [FromQuery] bool download = false)
+        => await GenerateAsync(subleaseId, ContractDocumentType.SupplementaryAgreement, download);
+
 
     [HttpPost("sublease/{subleaseId}/return-act")]
-    public async Task<IActionResult> SubleaseReturnAct(Guid subleaseId)
-        => await GenerateAsync(subleaseId, ContractDocumentType.ReturnAct);
+    public async Task<IActionResult> SubleaseReturnAct(Guid subleaseId, [FromQuery] bool download = false)
+        => await GenerateAsync(subleaseId, ContractDocumentType.ReturnAct, download);
 
     [HttpPost("sublease/{subleaseId}/extension")]
-    public async Task<IActionResult> SubleaseExtension(Guid subleaseId)
-        => await GenerateAsync(subleaseId, ContractDocumentType.ExtensionAgreement);
+    public async Task<IActionResult> SubleaseExtension(Guid subleaseId, [FromQuery] bool download = false)
+        => await GenerateAsync(subleaseId, ContractDocumentType.ExtensionAgreement, download);
 
-    private async Task<IActionResult> GenerateAsync(Guid subleaseId, ContractDocumentType docType)
+    private async Task<IActionResult> GenerateAsync(Guid subleaseId, ContractDocumentType docType, bool download)
     {
         try
         {
@@ -48,9 +49,34 @@ public class DocumentController : ControllerBase
             };
 
             var document = ContractDocumentFactory.Create(leaseType, contractorType, docType, _context);
-            await document.CreateAsync(subleaseId);
+            var paths = await document.CreateAsync(subleaseId); // CreateAsync возвращает List<string>
 
-            return Ok(new { message = "Document created." });
+            if (!download)
+            {
+                // Просто сохранили на сервере — файлы уже лежат
+                return Ok(new { message = "Документи збережено.", files = paths.Select(Path.GetFileName) });
+            }
+
+            // Скачиваем на клиент
+            if (paths.Count == 1)
+            {
+                var bytes = await System.IO.File.ReadAllBytesAsync(paths[0]);
+                return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", Path.GetFileName(paths[0]));
+            }
+
+            using var ms = new MemoryStream();
+            using (var zip = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+            {
+                foreach (var path in paths)
+                {
+                    var entry = zip.CreateEntry(Path.GetFileName(path));
+                    using var entryStream = entry.Open();
+                    using var fileStream = System.IO.File.OpenRead(path);
+                    await fileStream.CopyToAsync(entryStream);
+                }
+            }
+            ms.Seek(0, SeekOrigin.Begin);
+            return File(ms.ToArray(), "application/zip", $"documents-{subleaseId}.zip");
         }
         catch (Exception ex)
         {
