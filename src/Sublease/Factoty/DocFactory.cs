@@ -215,7 +215,7 @@ namespace Lease.Factory
             akt.WriteXmlTree("rnokpp", llc.Rnokpp);
             akt.WriteXmlTree("area", data.Group.Area.ToString());
             akt.WriteXmlTree("address_p", data.Group.Address);
-            akt.WriteXmlTree("StrokDii", data.Sublease.ContractEndDate.ToString("dd/MM/yyyy"));
+            akt.WriteXmlTree("StrokDii", data.Sublease.ContractEndDate);
             akt.WriteXmlTree("address", llc.Address);
             akt.WriteXmlTree("BanckAccount", DeleteSpace.Deletespace(llc.BankAccount ?? ""));
             akt.WriteXmlTree("area_text", NumToText.NumberToText(data.Group.Area));
@@ -316,7 +316,7 @@ namespace Lease.Factory
             p.WriteXmlTree("ContractNumber", data.Sublease.ContractNumber);
             p.WriteXmlTree("CreationContractDate", data.Sublease.ContractSigningDate.ToString("dd.MM.yyyy"));
             p.WriteXmlTree("CreationDate", data.Sublease.ContractEndDate.ToString("dd.MM.yyyy"));
-            p.WriteXmlTree("StrokDii", data.Sublease.ContractEndDate2?.ToString("dd.MM.yyyy") ?? "____");
+            p.WriteXmlTree("StrokDii", data.Sublease.ContractEndDate);
             p.WriteXmlTree("PipSublessor", llc.Fullname);
             p.WriteXmlTree("rnokppSublessor", llc.Rnokpp);
             p.WriteXmlTree("addressSublessor", llc.Address);

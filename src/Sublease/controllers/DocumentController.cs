@@ -49,15 +49,13 @@ public class DocumentController : ControllerBase
             };
 
             var document = ContractDocumentFactory.Create(leaseType, contractorType, docType, _context);
-            var paths = await document.CreateAsync(subleaseId); // CreateAsync возвращает List<string>
+            var paths = await document.CreateAsync(subleaseId);
 
             if (!download)
             {
-                // Просто сохранили на сервере — файлы уже лежат
                 return Ok(new { message = "Документи збережено.", files = paths.Select(Path.GetFileName) });
             }
 
-            // Скачиваем на клиент
             if (paths.Count == 1)
             {
                 var bytes = await System.IO.File.ReadAllBytesAsync(paths[0]);
